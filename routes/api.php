@@ -8,6 +8,9 @@ use App\Http\Controllers\Api\FruitController;
 use App\Http\Controllers\Api\HarvestController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\WasteController;
+use App\Http\Controllers\Api\FruitWeightController;
+use App\Http\Controllers\Api\HarvestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,11 +48,8 @@ Route::apiResource('users', UserController::class);
 
 // Additional user routes
 Route::post('/users/check-email', [UserController::class, 'checkEmail']);
-Route::get('/users/search', [UserController::class, 'search']);
 
-// Profile routes (if you still want them, but public)
-Route::get('/profile/{id}', [UserController::class, 'show']); // Use show method instead
-Route::put('/profile/{id}', [UserController::class, 'update']); 
+
 
 // Authentication routes
 Route::prefix('auth')->group(function () {
@@ -59,3 +59,29 @@ Route::prefix('auth')->group(function () {
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 });
+
+// Basic CRUD using apiResource
+Route::apiResource('harvest', HarvestController::class);
+
+// Custom routes (separate para hindi magulo)
+Route::prefix('harvest')->group(function () {
+    // Summary routes
+    Route::get('/by-fruit/{fruitId}', [HarvestController::class, 'getByFruit']);
+    Route::get('/summary/by-fruit', [HarvestController::class, 'summaryByFruit']);
+    Route::get('/summary/monthly', [HarvestController::class, 'monthlySummary']);
+});
+
+// Waste routes
+Route::apiResource('wastes', WasteController::class);
+
+// Waste Custom routes
+Route::get('wastes/by-harvest/{harvestId}', [WasteController::class, 'getByHarvest']);
+Route::get('wastes/{harvestId}/stats', [WasteController::class, 'getHarvestWasteStats']);
+Route::post('wastes/summary/by-date-range', [WasteController::class, 'getSummaryByDateRange']);
+Route::post('wastes/bulk/store', [WasteController::class, 'bulkStore']);
+Route::post('wastes/bulk/force-delete', [WasteController::class, 'bulkForceDelete']); 
+Route::post('wastes/sync', [WasteController::class, 'sync']);
+Route::delete('wastes/{id}/force', [WasteController::class, 'forceDelete']);
+
+// Fryut weight routes
+Route::apiResource('fruit-weights', FruitWeightController::class);

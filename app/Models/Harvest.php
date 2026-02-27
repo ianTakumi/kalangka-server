@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;  // <- ADD THIS
 
 class Harvest extends Model
 {
@@ -16,13 +17,13 @@ class Harvest extends Model
         'id',              // Client-generated UUID
         'fruit_id',        // Reference to fruit
         'ripe_quantity',   // Ripe fruits harvested
-        'harvest_date',    // Date of harvest
+        'harvest_at',      // Date of harvest
     ];
     
     // Casts
     protected $casts = [
         'ripe_quantity' => 'integer',
-        'harvest_date' => 'date',
+        'harvest_at' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',
@@ -51,11 +52,27 @@ class Harvest extends Model
     }
     
     /**
+     * Relationship to FruitWeights - ADD THIS!
+     */
+    public function fruitWeights(): HasMany
+    {
+        return $this->hasMany(FruitWeight::class, 'harvest_id', 'id');
+    }
+    
+    /**
+     * Relationship to Wastes - ADD THIS!
+     */
+    public function wastes(): HasMany
+    {
+        return $this->hasMany(Waste::class, 'harvest_id', 'id');
+    }
+    
+    /**
      * Scope for harvesting date range
      */
     public function scopeHarvestedBetween($query, $startDate, $endDate)
     {
-        return $query->whereBetween('harvest_date', [$startDate, $endDate]);
+        return $query->whereBetween('harvest_at', [$startDate, $endDate]); // <- Fixed to harvest_at
     }
     
     /**

@@ -25,17 +25,17 @@ return new class extends Migration
             
             // Other columns
             $table->integer('ripe_quantity')->nullable(false);
-            $table->date('harvest_date')->nullable(false);
+            $table->date('harvest_at')->nullable(false);
             
             // Timestamps
-            $table->timestamp('created_at')->useCurrent(); // default now()
-            $table->timestamp('updated_at')->useCurrent(); // timestamp without timezone
+            $table->timestamp('created_at')->useCurrent(); 
+            $table->timestamp('updated_at')->useCurrent(); 
             
             
             // Indexes
             $table->index('fruit_id');
-            $table->index('harvest_date');
-            $table->index(['fruit_id', 'harvest_date']);
+            $table->index('harvest_at');
+            $table->index(['fruit_id', 'harvest_at']);
             $table->index('created_at');
         });
     }

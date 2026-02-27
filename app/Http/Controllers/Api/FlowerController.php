@@ -8,6 +8,15 @@ use Illuminate\Http\Request;
 
 class FlowerController extends Controller
 {
+    // Get all flowers for download to react native
+    public function index()
+    {
+        $flowers = Flower::all();
+        return response()->json([
+            'success' => true,
+            'data' => $flowers
+        ]);
+    }
     
     // Store flower (from React Native)
     public function store(Request $request)

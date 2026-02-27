@@ -18,10 +18,12 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'id',           // ← ADD THIS para sa UUID
         'first_name', 
         'last_name',   
-        "gender",
+        'gender',
         'email',
+        'role',         // ← ADD THIS para sa role
         'password',
     ];
 
@@ -45,8 +47,19 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'id' => 'string',  // ← OPTIONAL: Ensure ID is treated as string
         ];
     }
+
+    /**
+     * Disable auto-incrementing since we're using UUID
+     */
+    public $incrementing = false;  // ← ADD THIS
+
+    /**
+     * Set the key type to string
+     */
+    protected $keyType = 'string';  // ← ADD THIS
 
     /**
      * Accessor for full name

@@ -15,53 +15,66 @@ class AuthController extends Controller
     /**
      * Register a new user
      */
-    public function register(Request $request)
-    {
-        // Validate request
-        $validator = Validator::make($request->all(), [
-            'first_name' => 'required|string|max:100',
-            'gender' => 'required|string|max:100',
-            'last_name' => 'required|string|max:100',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
-        ]);
+   public function register(Request $request)
+{
+    // Validate request - add id and role validation
+    $validator = Validator::make($request->all(), [
+        'id' => 'sometimes|string|uuid', // Optional pero i-validate kung present
+        'first_name' => 'required|string|max:100',
+        'last_name' => 'required|string|max:100',
+        'email' => 'required|string|email|max:255|unique:users',
+        'gender' => 'required|string|in:male,female', // Specify allowed values
+        'role' => 'sometimes|string|in:user,admin,manager,worker,supervisor', // Add role validation
+        'password' => 'required|string|min:8',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        // Create user
-        $user = User::create([
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-            'email' => $request->email,
-            'gender' => $request->gender,
-            'password' => Hash::make($request->password),
-        ]);
-
-        // Create token
-        $token = $user->createToken('auth_token')->plainTextToken;
-
+    if ($validator->fails()) {
         return response()->json([
-            'success' => true,
-            'message' => 'Registration successful',
-            'user' => [
-                'id' => $user->id,
-                'first_name' => $user->first_name,
-                'last_name' => $user->last_name,
-                'email' => $user->email,
-                'role' => $user->role,
-                'gender' => $user->gender,
-                'created_at' => $user->created_at,
-            ],
-            'access_token' => $token,
-            'token_type' => 'Bearer'
-        ], 201);
+            'success' => false,
+            'message' => 'Validation error',
+            'errors' => $validator->errors()
+        ], 422);
     }
+
+    // Prepare user data
+    $userData = [
+        'first_name' => $request->first_name,
+        'last_name' => $request->last_name,
+        'email' => $request->email,
+        'gender' => $request->gender,
+        'password' => Hash::make($request->password),
+    ];
+
+    // Include ID if provided (for sync from mobile)
+    if ($request->has('id')) {
+        $userData['id'] = $request->id;
+    }
+
+    // Include role if provided, otherwise default to 'user'
+    $userData['role'] = $request->role ?? 'user';
+
+    // Create user
+    $user = User::create($userData);
+
+    // Create token
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Registration successful',
+        'user' => [
+            'id' => $user->id,
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'gender' => $user->gender,
+            'created_at' => $user->created_at,
+        ],
+        'access_token' => $token,
+        'token_type' => 'Bearer'
+    ], 201);
+}
 
     /**
      * Login user

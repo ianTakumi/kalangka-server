@@ -14,56 +14,45 @@ class UserController extends Controller
     /**
      * Display a listing of users (Admin only).
      */
-    public function index(Request $request)
-    {
-        // Check if user is admin (add your own admin check logic)
-        // if (!auth()->user()->is_admin) {
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => 'Unauthorized access'
-        //     ], 403);
-        // }
-        
-        $query = User::query();
-        
-        // Search by name or email
-        if ($request->has('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
-            });
-        }
-        
-        // Filter by created date
-        if ($request->has('start_date')) {
-            $query->whereDate('created_at', '>=', $request->start_date);
-        }
-        
-        if ($request->has('end_date')) {
-            $query->whereDate('created_at', '<=', $request->end_date);
-        }
-        
-        // Ordering
-        $orderBy = $request->input('order_by', 'created_at');
-        $orderDir = $request->input('order_dir', 'desc');
-        $query->orderBy($orderBy, $orderDir);
-        
-        // Pagination
-        $perPage = $request->input('per_page', 20);
-        $users = $query->paginate($perPage);
-        
-        // Hide sensitive information
-        $users->getCollection()->transform(function ($user) {
-            return $user->makeHidden(['password', 'remember_token']);
+  public function index(Request $request)
+{
+    $query = User::query();
+    
+    // Search by name or email
+    if ($request->has('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('first_name', 'like', "%{$search}%")
+              ->orWhere('last_name', 'like', "%{$search}%")
+              ->orWhere('email', 'like', "%{$search}%");
         });
-        
-        return response()->json([
-            'success' => true,
-            'data' => $users
-        ]);
     }
+    
+    // Filter by created date
+    if ($request->has('start_date')) {
+        $query->whereDate('created_at', '>=', $request->start_date);
+    }
+    
+    if ($request->has('end_date')) {
+        $query->whereDate('created_at', '<=', $request->end_date);
+    }
+    
+    // Ordering
+    $orderBy = $request->input('order_by', 'created_at');
+    $orderDir = $request->input('order_dir', 'desc');
+    $query->orderBy($orderBy, $orderDir);
+    
+    // Get all users (no pagination)
+    $users = $query->get();
+    
+    // Optionally include password (for sync purposes)
+    $users->makeVisible(['password']);
+    
+    return response()->json([
+        'success' => true,
+        'data' => $users // Direct array ng users
+    ]);
+}
     
     /**
      * Store a newly created user (Admin registration or public signup).
@@ -143,7 +132,7 @@ class UserController extends Controller
     /**
      * Update the specified user.
      */
-  public function update(Request $request, string $id)
+public function update(Request $request, string $id)
 {
     $user = User::find($id);
     
@@ -157,6 +146,7 @@ class UserController extends Controller
     $validator = Validator::make($request->all(), [
         'first_name' => 'sometimes|string|max:100',
         'last_name' => 'sometimes|string|max:100',
+        'gender' => 'sometimes|string|in:male,female,other',
         'email' => [
             'sometimes',
             'string',
@@ -164,8 +154,6 @@ class UserController extends Controller
             'max:255',
             Rule::unique('users')->ignore($id),
         ],
-        // Remove password_confirmation
-        'password' => 'sometimes|string|min:8',
     ]);
     
     if ($validator->fails()) {
@@ -175,7 +163,13 @@ class UserController extends Controller
         ], 422);
     }
     
-    // Update basic information
+    // DEBUG: I-print natin ang values
+    \Log::info('=== UPDATE DEBUG ===');
+    \Log::info('Request data:', $request->all());
+    \Log::info('Gender value: ' . json_encode($request->input('gender')));
+    \Log::info('Has gender? ' . ($request->has('gender') ? 'YES' : 'NO'));
+    
+    // Update using fill para sure
     if ($request->has('first_name')) {
         $user->first_name = $request->first_name;
     }
@@ -184,23 +178,32 @@ class UserController extends Controller
         $user->last_name = $request->last_name;
     }
     
+    if ($request->has('gender')) {
+        $user->gender = $request->gender;
+        \Log::info('Setting gender to: ' . $request->gender);
+    }
+    
     if ($request->has('email') && $request->email !== $user->email) {
         $user->email = $request->email;
     }
     
-    // Update password if provided (no current password check)
-    if ($request->has('password')) {
-        $user->password = Hash::make($request->password);
-    }
+    // Check kung may changes
+    \Log::info('Dirty attributes: ', $user->getDirty());
     
-    $user->save();
+    $saved = $user->save();
+    \Log::info('Save result: ' . ($saved ? 'SUCCESS' : 'FAILED'));
+    
+    // Get fresh copy from DB
+    $freshUser = User::find($id);
+    \Log::info('Fresh user gender: ' . $freshUser->gender);
+    \Log::info('=== END DEBUG ===');
     
     // Hide sensitive information
     $user->makeHidden(['password', 'remember_token']);
     
     return response()->json([
         'success' => true,
-        'message' => 'User updated successfully',
+        'message' => 'User updated successfully hiii',
         'data' => $user
     ]);
 }
@@ -325,34 +328,7 @@ class UserController extends Controller
         ]);
     }
     
-    /**
-     * Search users by name or email.
-     */
-    public function search(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'query' => 'required|string|min:2',
-        ]);
-        
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-        
-        $users = User::where('first_name', 'like', "%{$request->query}%")
-                    ->orWhere('last_name', 'like', "%{$request->query}%")
-                    ->orWhere('email', 'like', "%{$request->query}%")
-                    ->limit(10)
-                    ->get()
-                    ->makeHidden(['password', 'remember_token']);
-        
-        return response()->json([
-            'success' => true,
-            'data' => $users
-        ]);
-    }
+
     
     /**
      * Check if email exists (for registration validation).

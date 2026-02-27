@@ -31,7 +31,7 @@ return new class extends Migration
             
             // Other columns
             $table->integer('quantity')->nullable(false);
-            $table->timestamp('wrappted_at')->nullable(); // Note: double 'p' in wrappted_at
+            $table->timestamp('bagged_at')->nullable(); 
             $table->text('image_url')->nullable(false);
             
             // Timestamps
