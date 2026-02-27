@@ -1,0 +1,10 @@
+# heroku.yml
+build:
+  docker:
+    web: Dockerfile
+  config:
+    APP_ENV: production
+    APP_DEBUG: false
+
+run:
+  web: apache2-foreground
