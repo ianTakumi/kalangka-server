@@ -6,4 +6,4 @@ build:
     APP_DEBUG: false
 
 run:
-  web: apache2-foreground
+  web: heroku-php-apache2 public/
