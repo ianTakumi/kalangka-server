@@ -53,7 +53,7 @@ class HarvestController extends Controller
         $validator = Validator::make($request->all(), [
             'id' => 'required|string|uuid|unique:harvests,id',
             'fruit_id' => 'required|string|exists:fruits,id',
-            'ripe_quantity' => 'required|integer|min:1',
+            'ripe_quantity' => 'required|integer',
             'harvest_at' => 'required|date|before_or_equal:today',
             
             // Fruit weights validation with IDs
@@ -135,6 +135,70 @@ class HarvestController extends Controller
     }
     
     /**
+ * Assign harvester to a fruit (create harvest assignment)
+ * This creates a harvest record with just fruit_id and user_id
+ * Other fields (ripe_quantity, harvest_at) will be filled during actual harvest
+ */
+public function assignHarvester(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'id' => 'required|string|uuid|unique:harvests,id',
+        'fruit_id' => 'required|string|exists:fruits,id',
+        'user_id' => 'required|string|exists:users,id',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'errors' => $validator->errors()
+        ], 422);
+    }
+
+    DB::beginTransaction();
+
+    try {
+        // Create harvest record with just fruit_id and user_id
+        // ripe_quantity and harvest_at are nullable, so they can be null initially
+        $harvest = Harvest::create([
+            'id' => $request->id,
+            'fruit_id' => $request->fruit_id,
+            'user_id' => $request->user_id,
+            'ripe_quantity' => 0, // Set to 0 initially, will be updated during actual harvest
+            'harvest_at' => null, // Will be set during actual harvest
+        ]);
+
+        DB::commit();
+
+        // Load relationships
+        $harvest->load(['fruit', 'user']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Harvester assigned successfully',
+            'data' => [
+                'id' => $harvest->id,
+                'fruit_id' => $harvest->fruit_id,
+                'user_id' => $harvest->user_id,
+                'fruit' => $harvest->fruit,
+                'user' => $harvest->user,
+                'status' => 'assigned',
+                'created_at' => $harvest->created_at
+            ]
+        ], 201);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        
+        return response()->json([   
+            'success' => false,
+            'message' => 'Failed to assign harvester',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+
+    /**
      * Display the specified harvest.
      */
     public function show(string $id)
@@ -154,43 +218,117 @@ class HarvestController extends Controller
         ]);
     }
     
-    /**
-     * Update the specified harvest.
-     */
-    public function update(Request $request, string $id)
-    {
-        $harvest = Harvest::find($id);
+/**
+ * Update the specified harvest - Updates harvest, REPLACES fruit_weights and wastes if provided
+ * 
+ * @param Request $request
+ * @param string $id
+ * @return \Illuminate\Http\JsonResponse
+ */
+public function update(Request $request, string $id)
+{
+    $harvest = Harvest::find($id);
+    
+    if (!$harvest) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Harvest record not found'
+        ], 404);
+    }
+    
+    // Validate the request
+    $validator = Validator::make($request->all(), [
+        'id' => 'required|string|uuid',
+        'fruit_id' => 'required|string|exists:fruits,id',
+        'ripe_quantity' => 'required|integer',
+        'harvest_at' => 'required|date|before_or_equal:today',
         
-        if (!$harvest) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Harvest record not found'
-            ], 404);
-        }
+        // Fruit weights validation - HINDI required
+        'fruit_weights' => 'sometimes|array',
+        'fruit_weights.*.id' => 'required_with:fruit_weights|string|uuid',
+        'fruit_weights.*.weight' => 'required_with:fruit_weights|numeric|min:0|max:99.99',
+        'fruit_weights.*.status' => 'sometimes|in:local,national',
         
-        $validator = Validator::make($request->all(), [
-            'fruit_id' => 'sometimes|string|exists:fruits,id',
-            'ripe_quantity' => 'sometimes|integer|min:1',
-            'harvest_at' => 'sometimes|date|before_or_equal:today',
+        // Waste validation - HINDI required
+        'wastes' => 'sometimes|array',
+        'wastes.*.id' => 'required_with:wastes|string|uuid',
+        'wastes.*.waste_quantity' => 'required_with:wastes|integer|min:1',
+        'wastes.*.reason' => 'required_with:wastes|string|max:255',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'errors' => $validator->errors()
+        ], 422);
+    }
+
+    DB::beginTransaction();
+
+    try {
+        // 1. UPDATE the existing harvest record
+        $harvest->update([
+            'fruit_id' => $request->fruit_id,
+            'ripe_quantity' => $request->ripe_quantity,
+            'harvest_at' => $request->harvest_at,
         ]);
-        
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+
+        // 2. REPLACE fruit_weights ONLY if provided in request
+        if ($request->has('fruit_weights')) {
+            // Delete all existing fruit_weights permanently
+            FruitWeight::where('harvest_id', $harvest->id)->forceDelete();
+            
+            // Create new fruit weights from request (kahit empty array)
+            foreach ($request->fruit_weights as $weightData) {
+                FruitWeight::create([
+                    'id' => $weightData['id'],
+                    'harvest_id' => $harvest->id,
+                    'weight' => $weightData['weight'],
+                    'status' => $weightData['status'] ?? 
+                               ($weightData['weight'] < 8 ? 'local' : 'national'),
+                ]);
+            }
         }
-        
-        $harvest->update($request->all());
-        $harvest->load('fruit.tree');
-        
+
+        // 3. REPLACE wastes ONLY if provided in request
+        if ($request->has('wastes')) {
+            // Delete all existing wastes permanently
+            Waste::where('harvest_id', $harvest->id)->forceDelete();
+            
+            // Create new wastes from request (kahit empty array)
+            foreach ($request->wastes as $wasteData) {
+                Waste::create([
+                    'id' => $wasteData['id'],
+                    'harvest_id' => $harvest->id,
+                    'waste_quantity' => $wasteData['waste_quantity'],
+                    'reason' => $wasteData['reason'],
+                    'reported_at' => $request->harvest_at,
+                ]);
+            }
+        }
+
+        DB::commit();
+
+        // Load relationships
+        $harvest->load(['fruit.tree', 'fruitWeights', 'wastes']);
+
         return response()->json([
             'success' => true,
             'message' => 'Harvest updated successfully',
             'data' => $harvest
-        ]);
+        ], 200);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        
+        return response()->json([   
+            'success' => false,
+            'message' => 'Failed to update harvest',
+            'error' => $e->getMessage()
+        ], 500);
     }
-    
+}
+
     /**
      * Remove the specified harvest.
      */

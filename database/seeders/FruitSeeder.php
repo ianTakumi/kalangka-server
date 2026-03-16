@@ -34,6 +34,11 @@ class FruitSeeder extends Seeder
         $totalFlowerQuantity = 0;
         $totalFruitQuantity = 0;
 
+        // Calculate base date (115 days ago from now)
+        $baseDate = Carbon::now()->subDays(115);
+        $this->command->info("📅 Base date (115 days ago): " . $baseDate->format('Y-m-d H:i:s'));
+        $this->command->info('');
+
         // HARDCODED UUIDs for 80 fruits (40 flowers × 2 fruits)
         $fruitIds = [
             // ===== EAST LANGKA (Trees 1-5) =====
@@ -176,19 +181,14 @@ class FruitSeeder extends Seeder
             
             // Create exactly 2 fruits per flower
             for ($i = 1; $i <= 2; $i++) {
-                // Use flower's created_at as base
-                $baseDate = $flower->created_at ?? Carbon::now()->subDays(rand(0, 30));
+                // Use base date (115 days ago) for all fruits
+                $fruitCreatedAt = clone $baseDate;
                 
-                // 80% chance of being bagged (harvested)
-                $isBagged = rand(1, 100) <= 80;
+                // All fruits are bagged (100% bagged rate)
+                $isBagged = true;
                 
-                // Fruit creation date (7-21 days after flower was created)
-                $fruitCreatedAt = $baseDate->copy()->addDays(rand(7, 21))->addHours(rand(0, 23));
-                
-                // If bagged, bagged date is 10-20 days after fruit creation
-                $baggedAt = $isBagged 
-                    ? $fruitCreatedAt->copy()->addDays(rand(10, 20))->addHours(rand(0, 23))
-                    : null;
+                // Bagged date is the same as created_at (since they're all bagged)
+                $baggedAt = clone $fruitCreatedAt;
                 
                 // Calculate fruit quantity based on remaining capacity
                 $remainingCapacity = $maxFruitPerFlower - $flowerFruitTotal;
@@ -228,6 +228,7 @@ class FruitSeeder extends Seeder
                     $totalFruitQuantity += $fruitQuantity;
                     
                     $this->command->info("   🍎 Fruit {$i}: {$fruitQuantity} fruits (Running total: {$flowerFruitTotal}/{$maxFruitPerFlower})");
+                    $this->command->info("      📅 Created: " . $fruitCreatedAt->format('Y-m-d H:i:s'));
                 } else {
                     $this->command->info("   ⚠️  Fruit {$i}: No fruits (max capacity reached: {$flowerFruitTotal}/{$maxFruitPerFlower})");
                 }
@@ -253,6 +254,9 @@ class FruitSeeder extends Seeder
         $this->command->info('🍎 Total fruit records created: ' . $totalFruits);
         $this->command->info('📊 Total fruit quantity: ' . $totalFruitQuantity);
         $this->command->info('📈 Utilization rate: ' . round(($totalFruitQuantity / $totalFlowerQuantity) * 100, 2) . '%');
+        $this->command->info('📅 All fruits created on: ' . $baseDate->format('Y-m-d H:i:s'));
+        $this->command->info('📅 All fruits bagged on: ' . $baseDate->format('Y-m-d H:i:s'));
+        $this->command->info('📊 Days since bagged: 115 days');
         $this->command->info('====================================');
         $this->command->info('🖼️  Fruit Image: ' . $imageUrl);
         $this->command->info('====================================');

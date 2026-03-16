@@ -64,6 +64,8 @@ Route::apiResource('harvest', HarvestController::class);
 
 // Custom routes (separate para hindi magulo)
 Route::prefix('harvest')->group(function () {
+    Route::post('/assign', [HarvestController::class, 'assignHarvester']);
+
     // Summary routes
     Route::get('/by-fruit/{fruitId}', [HarvestController::class, 'getByFruit']);
     Route::get('/summary/by-fruit', [HarvestController::class, 'summaryByFruit']);
