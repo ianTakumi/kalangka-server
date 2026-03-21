@@ -449,6 +449,7 @@ public function update(Request $request, string $id)
     ]);
 }
 
+
 public function harvestSummary(Request $request)
 {
     try {

@@ -43,7 +43,12 @@ Route::get('harvests/summary/by-fruit', [HarvestController::class, 'summaryByFru
 Route::get('harvests/summary/monthly', [HarvestController::class, 'monthlySummary']);
 Route::get('/harvest-summary', [HarvestController::class, 'harvestSummary']);
 Route::get('/summary/weekly-totals', [HarvestController::class, 'weeklySummaryTotals']);
+
+
 // User routes
+//
+Route::get('/users/harvest-analytics', [DashboardController::class, 'usersHarvestAnalytics']);
+
 // Public user routes - no authentication required
 Route::apiResource('users', UserController::class);
 
@@ -97,4 +102,5 @@ Route::get('/summary/analytics-totals', [HarvestController::class, 'analytics_to
 
 
 Route::get('/summary/totals', [DashboardController::class, 'totals']);
-Route::get('/tree/top', [DashboardController::class, 'topYieldingTrees']);  
+Route::get('/tree/top', [DashboardController::class, 'topYieldingTrees']); 
+Route::get('/per-tree/weight', [DashboardController::class, 'totalWeightPerTree']); 
