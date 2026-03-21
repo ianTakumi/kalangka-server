@@ -449,9 +449,8 @@ public function update(Request $request, string $id)
     ]);
 }
 
-
 public function harvestSummary(Request $request)
-{
+{ 
     try {
         $start = $request->start_date;
         $end = $request->end_date;

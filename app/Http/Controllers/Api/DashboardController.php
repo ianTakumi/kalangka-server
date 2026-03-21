@@ -158,7 +158,8 @@ public function totalWeightPerTree()
             'status' => false,
             'message' => $e->getMessage()
         ], 500);
-    }
+    } 
+    
 }
 
 

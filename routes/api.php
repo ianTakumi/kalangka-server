@@ -97,7 +97,7 @@ Route::apiResource('fruit-weights', FruitWeightController::class);
 
 //
 
-//harvest
+//harvests
 Route::get('/summary/analytics-totals', [HarvestController::class, 'analytics_totals']);
 
 
