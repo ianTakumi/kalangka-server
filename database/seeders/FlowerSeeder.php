@@ -28,87 +28,87 @@ class FlowerSeeder extends Seeder
         
         $totalFlowers = 0;
 
-        // HARDCODED UUIDs for flowers (2 per tree)
+        // HARDCODED REAL UUIDs for flowers (2 per tree = 40 flowers total)
         $flowerIds = [
             // For East Langka #1 (id: 11111111-1111-1111-1111-111111111111)
-            '11111111-1111-1111-1111-222222222222',
-            '11111111-1111-1111-1111-333333333333',
+            '1d92e857-045d-44f4-935c-61a5f0637881',
+            '2a3f8b9c-4d5e-6f7a-8b9c-0d1e2f3a4b5c',
             
             // For East Langka #2 (id: 22222222-2222-2222-2222-222222222222)
-            '22222222-2222-2222-2222-333333333333',
-            '22222222-2222-2222-2222-444444444444',
+            '3b4c5d6e-7f8a-9b0c-1d2e-3f4a5b6c7d8e',
+            '4c5d6e7f-8a9b-0c1d-2e3f-4a5b6c7d8e9f',
             
             // For East Langka #3 (id: 33333333-3333-3333-3333-333333333333)
-            '33333333-3333-3333-3333-444444444444',
-            '33333333-3333-3333-3333-555555555555',
+            '5d6e7f8a-9b0c-1d2e-3f4a-5b6c7d8e9f0a',
+            '6e7f8a9b-0c1d-2e3f-4a5b-6c7d8e9f0a1b',
             
             // For East Langka #4 (id: 44444444-4444-4444-4444-444444444444)
-            '44444444-4444-4444-4444-555555555555',
-            '44444444-4444-4444-4444-666666666666',
+            '7f8a9b0c-1d2e-3f4a-5b6c-7d8e9f0a1b2c',
+            '8a9b0c1d-2e3f-4a5b-6c7d-8e9f0a1b2c3d',
             
             // For East Langka #5 (id: 55555555-5555-5555-5555-555555555555)
-            '55555555-5555-5555-5555-666666666666',
-            '55555555-5555-5555-5555-777777777777',
+            '9b0c1d2e-3f4a-5b6c-7d8e-9f0a1b2c3d4e',
+            '0c1d2e3f-4a5b-6c7d-8e9f-0a1b2c3d4e5f',
             
             // For North Langka #1 (id: 66666666-6666-6666-6666-666666666666)
-            '66666666-6666-6666-6666-777777777777',
-            '66666666-6666-6666-6666-888888888888',
+            '1a2b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
+            '2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e',
             
             // For North Langka #2 (id: 77777777-7777-7777-7777-777777777777)
-            '77777777-7777-7777-7777-888888888888',
-            '77777777-7777-7777-7777-999999999999',
+            '3c4d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f',
+            '4d5e6f7a-8b9c-0d1e-2f3a-4b5c6d7e8f9a',
             
             // For North Langka #3 (id: 88888888-8888-8888-8888-888888888888)
-            '88888888-8888-8888-8888-999999999999',
-            '88888888-8888-8888-8888-aaaaaaaaaaaa',
+            '5e6f7a8b-9c0d-1e2f-3a4b-5c6d7e8f9a0b',
+            '6f7a8b9c-0d1e-2f3a-4b5c-6d7e8f9a0b1c',
             
             // For North Langka #4 (id: 99999999-9999-9999-9999-999999999999)
-            '99999999-9999-9999-9999-aaaaaaaaaaaa',
-            '99999999-9999-9999-9999-bbbbbbbbbbbb',
+            '7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d',
+            '8b9c0d1e-2f3a-4b5c-6d7e-8f9a0b1c2d3e',
             
             // For North Langka #5 (id: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa)
-            'aaaaaaaa-aaaa-aaaa-aaaa-bbbbbbbbbbbb',
-            'aaaaaaaa-aaaa-aaaa-aaaa-cccccccccccc',
+            '9c0d1e2f-3a4b-5c6d-7e8f-9a0b1c2d3e4f',
+            '0d1e2f3a-4b5c-6d7e-8f9a-0b1c2d3e4f5a',
             
             // For South Langka #1 (id: bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb)
-            'bbbbbbbb-bbbb-bbbb-bbbb-cccccccccccc',
-            'bbbbbbbb-bbbb-bbbb-bbbb-dddddddddddd',
+            '1e2f3a4b-5c6d-7e8f-9a0b-1c2d3e4f5a6b',
+            '2f3a4b5c-6d7e-8f9a-0b1c-2d3e4f5a6b7c',
             
             // For South Langka #2 (id: cccccccc-cccc-cccc-cccc-cccccccccccc)
-            'cccccccc-cccc-cccc-cccc-dddddddddddd',
-            'cccccccc-cccc-cccc-cccc-eeeeeeeeeeee',
+            '3a4b5c6d-7e8f-9a0b-1c2d-3e4f5a6b7c8d',
+            '4b5c6d7e-8f9a-0b1c-2d3e-4f5a6b7c8d9e',
             
             // For South Langka #3 (id: dddddddd-dddd-dddd-dddd-dddddddddddd)
-            'dddddddd-dddd-dddd-dddd-eeeeeeeeeeee',
-            'dddddddd-dddd-dddd-dddd-ffffffffffff',
+            '5c6d7e8f-9a0b-1c2d-3e4f-5a6b7c8d9e0f',
+            '6d7e8f9a-0b1c-2d3e-4f5a-6b7c8d9e0f1a',
             
             // For South Langka #4 (id: eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee)
-            'eeeeeeee-eeee-eeee-eeee-ffffffffffff',
-            'eeeeeeee-eeee-eeee-eeee-111111111111',
+            '7e8f9a0b-1c2d-3e4f-5a6b-7c8d9e0f1a2b',
+            '8f9a0b1c-2d3e-4f5a-6b7c-8d9e0f1a2b3c',
             
             // For South Langka #5 (id: ffffffff-ffff-ffff-ffff-ffffffffffff)
-            'ffffffff-ffff-ffff-ffff-111111111111',
-            'ffffffff-ffff-ffff-ffff-222222222222',
+            '9a0b1c2d-3e4f-5a6b-7c8d-9e0f1a2b3c4d',
+            '0b1c2d3e-4f5a-6b7c-8d9e-0f1a2b3c4d5e',
             
             // For West Langka #1 (id: 11111111-2222-3333-4444-555555555555)
-            '11111111-2222-3333-4444-666666666666',
-            '11111111-2222-3333-4444-777777777777',
+            '1c2d3e4f-5a6b-7c8d-9e0f-1a2b3c4d5e6f',
+            '2d3e4f5a-6b7c-8d9e-0f1a-2b3c4d5e6f7a',
             
             // For West Langka #2 (id: 22222222-3333-4444-5555-666666666666)
-            '22222222-3333-4444-5555-777777777777',
-            '22222222-3333-4444-5555-888888888888',
+            '3e4f5a6b-7c8d-9e0f-1a2b-3c4d5e6f7a8b',
+            '4f5a6b7c-8d9e-0f1a-2b3c-4d5e6f7a8b9c',
             
             // For West Langka #3 (id: 33333333-4444-5555-6666-777777777777)
-            '33333333-4444-5555-6666-888888888888',
-            '33333333-4444-5555-6666-999999999999',
+            '5a6b7c8d-9e0f-1a2b-3c4d-5e6f7a8b9c0d',
+            '6b7c8d9e-0f1a-2b3c-4d5e-6f7a8b9c0d1e',
             
             // For West Langka #4 (id: 44444444-5555-6666-7777-888888888888)
-            '44444444-5555-6666-7777-999999999999',
-            '44444444-5555-6666-7777-aaaaaaaaaaaa',
+            '7c8d9e0f-1a2b-3c4d-5e6f-7a8b9c0d1e2f',
+            '8d9e0f1a-2b3c-4d5e-6f7a-8b9c0d1e2f3a',
             
             // For West Langka #5 (id: 55555555-6666-7777-8888-999999999999)
-            '55555555-6666-7777-8888-aaaaaaaaaaaa',
-            '55555555-6666-7777-8888-bbbbbbbbbbbb',
+            '9e0f1a2b-3c4d-5e6f-7a8b-9c0d1e2f3a4b',
+            '0f1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c',
         ];
 
         $flowerIndex = 0;

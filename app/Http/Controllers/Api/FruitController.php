@@ -61,7 +61,7 @@ class FruitController extends Controller
                 'flower_id' => 'required|string|exists:flowers,id',
                 'tree_id' => 'required|string|exists:trees,id',
                 'quantity' => 'required|integer|min:1',
-                'wrappted_at' => 'nullable|date',
+                'bagged_at' => 'nullable|date',
                 'image_url' => 'nullable|string',
             ]);
 
@@ -77,7 +77,7 @@ class FruitController extends Controller
                 'flower_id' => $request->flower_id,
                 'tree_id' => $request->tree_id,
                 'quantity' => $request->quantity,
-                'wrappted_at' => $request->wrappted_at ?? now(),
+                'bagged_at' => $request->bagged_at ?? now(),
                 'image_url' => $request->image_url ?? '',
             ]);
 
@@ -130,7 +130,7 @@ class FruitController extends Controller
                 'flower_id' => 'sometimes|string|exists:flowers,id',
                 'tree_id' => 'sometimes|string|exists:trees,id',
                 'quantity' => 'sometimes|integer|min:1',
-                'wrappted_at' => 'sometimes|date',
+                'bagged_at' => 'sometimes|date',
                 'image_url' => 'sometimes|string',
             ]);
 
@@ -154,8 +154,8 @@ class FruitController extends Controller
                 $fruit->quantity = $request->quantity;
             }
             
-            if ($request->has('wrappted_at')) {
-                $fruit->wrappted_at = $request->wrappted_at;
+            if ($request->has('bagged_at')) {
+                $fruit->bagged_at = $request->bagged_at;
             }
             
             if ($request->has('image_url')) {
@@ -266,7 +266,7 @@ class FruitController extends Controller
                 'fruits.*.flower_id' => 'required|string|exists:flowers,id',
                 'fruits.*.tree_id' => 'required|string|exists:trees,id',
                 'fruits.*.quantity' => 'required|integer|min:1',
-                'fruits.*.wrappted_at' => 'nullable|date',
+                'fruits.*.bagged_at' => 'nullable|date',
                 'fruits.*.image_url' => 'nullable|string',
             ]);
 
@@ -285,7 +285,7 @@ class FruitController extends Controller
                         'flower_id' => $fruitData['flower_id'],
                         'tree_id' => $fruitData['tree_id'],
                         'quantity' => $fruitData['quantity'],
-                        'wrappted_at' => $fruitData['wrappted_at'] ?? now(),
+                        'bagged_at' => $fruitData['bagged_at'] ?? now(),
                         'image_url' => $fruitData['image_url'] ?? '',
                     ]
                 );
