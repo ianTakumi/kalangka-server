@@ -421,4 +421,94 @@ public function update(Request $request, string $id)
             'data' => $summary
         ]);
     }
+
+
+     
+
+
+ public function analytics_totals()
+{
+    $currentYear = now()->year;
+
+    // Total harvest for the year
+    $totalHarvest = Harvest::whereYear('harvest_at', $currentYear)->sum('ripe_quantity');
+
+    // Total weight for the year
+    $totalWeight = FruitWeight::whereYear('created_at', $currentYear)->sum('weight');
+
+    // Total waste for all time (or can also filter by year if needed)
+    $totalWaste = Waste::sum('waste_quantity');
+
+    return response()->json([
+        'success' => true,
+        'data' => [
+            'total_harvest' => $totalHarvest,
+            'total_weight_kg' => round($totalWeight, 2),
+            'total_waste' => $totalWaste,
+        ]
+    ]);
+}
+
+public function harvestSummary(Request $request)
+{
+    try {
+        $start = $request->start_date;
+        $end = $request->end_date;
+
+        $harvestQuery = Harvest::query()
+            ->whereNotNull('harvest_at');
+
+        if ($start && $end) {
+            $harvestQuery->whereBetween('harvest_at', [$start, $end]);
+        }
+
+        $totalHarvest = (clone $harvestQuery)->sum('ripe_quantity');
+
+        $totalWeight = FruitWeight::whereIn(
+            'harvest_id',
+            (clone $harvestQuery)->pluck('id')
+        )->sum('weight');
+
+        $totalWaste = Waste::whereIn(
+            'harvest_id',
+            (clone $harvestQuery)->pluck('id')
+        )->sum('waste_quantity');
+
+        $totalTrees = Harvest::whereNotNull('harvest_at')
+            ->join('fruits', 'harvests.fruit_id', '=', 'fruits.id')
+            ->when($start && $end, function ($q) use ($start, $end) {
+                $q->whereBetween('harvests.harvest_at', [$start, $end]);
+            })
+            ->distinct('fruits.tree_id')
+            ->count('fruits.tree_id');
+
+        $avgHarvestPerTree = $totalTrees > 0 
+            ? round($totalHarvest / $totalTrees, 2) 
+            : 0;
+
+        $avgWeightPerTree = $totalTrees > 0 
+            ? round($totalWeight / $totalTrees, 2) 
+            : 0;
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'total_harvest' => $totalHarvest,
+                'total_weight' => round($totalWeight, 2),
+                'total_waste' => $totalWaste,
+                'total_trees' => $totalTrees,
+                'avg_harvest_per_tree' => $avgHarvestPerTree,
+                'avg_weight_per_tree' => $avgWeightPerTree,
+            ]
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to fetch summary',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+ 
 }
