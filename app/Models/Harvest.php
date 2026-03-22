@@ -12,13 +12,14 @@ class Harvest extends Model
     public $incrementing = false;
     protected $keyType = 'string';
     
-    // Fillable fields - with user_id
+    // Fillable fields
     protected $fillable = [
-        'id',              // Client-generated UUID
-        'fruit_id',        // Reference to fruit
-        'user_id',         // Reference to user (harvester)
-        'ripe_quantity',   // Ripe fruits harvested
-        'harvest_at',      // Date of harvest
+        'id',
+        'fruit_id',
+        'user_id',
+        'ripe_quantity',
+        'status',
+        'harvest_at',
     ];
     
     // Casts
@@ -27,6 +28,12 @@ class Harvest extends Model
         'harvest_at' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+    ];
+    
+    // Appends to JSON response
+    protected $appends = [
+        'total_weight',
+        'total_waste',
     ];
     
     /**
@@ -73,6 +80,22 @@ class Harvest extends Model
     public function wastes(): HasMany
     {
         return $this->hasMany(Waste::class, 'harvest_id', 'id');
+    }
+    
+    /**
+     * Get total weight from fruit weights
+     */
+    public function getTotalWeightAttribute()
+    {
+        return $this->fruitWeights->sum('weight');
+    }
+    
+    /**
+     * Get total waste from wastes
+     */
+    public function getTotalWasteAttribute()
+    {
+        return $this->wastes->sum('waste_quantity');
     }
     
     /**
@@ -138,22 +161,6 @@ class Harvest extends Model
     public function isCompleted(): bool
     {
         return !is_null($this->harvest_at);
-    }
-    
-    /**
-     * Get total weight from fruit weights
-     */
-    public function getTotalWeightAttribute()
-    {
-        return $this->fruitWeights->sum('weight');
-    }
-    
-    /**
-     * Get total waste from wastes
-     */
-    public function getTotalWasteAttribute()
-    {
-        return $this->wastes->sum('waste_quantity');
     }
     
     /**

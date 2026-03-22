@@ -22,18 +22,18 @@ return new class extends Migration
                   ->on('fruits')
                   ->onUpdate('cascade')
                   ->onDelete('cascade');
-                  
-            // Foreign key to users table (assignee/harvester)
-            $table->string('user_id')->nullable();   // Added nullable() so it can be null during creation
+                
+            $table->string('user_id')->nullable();   
             $table->foreign('user_id')
                   ->references('id')
                   ->on('users')
                   ->onUpdate('cascade')
                   ->onDelete('set null');
 
-            // Other columns
-            $table->integer('ripe_quantity')->nullable();  // Fixed: removed (true)
-            $table->date('harvest_at')->nullable();        // Fixed: removed (true)
+        
+            $table->integer('ripe_quantity')->nullable();  
+            $table->date('harvest_at')->nullable();       
+            $table->string('status')->default('pending'); // pending, partial, harvested
             
             // Timestamps
             $table->timestamp('created_at')->useCurrent(); 
@@ -41,7 +41,7 @@ return new class extends Migration
             
             // Indexes
             $table->index('fruit_id');
-            $table->index('user_id');           // Added index for user_id
+            $table->index('user_id');           
             $table->index('harvest_at');
             $table->index(['fruit_id', 'harvest_at']);
             $table->index('created_at');

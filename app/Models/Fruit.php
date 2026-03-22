@@ -17,14 +17,14 @@ class Fruit extends Model
         'flower_id',    // Reference to flower
         'tree_id',      // Reference to tree
         'quantity',     // Number of fruits
-        'wrappted_at',  // Note: Double 'p' to match your SQL
+        'bagged_at',  // Note: Double 'p' to match your SQL
         'image_url',    // Image URL
     ];
     
     // Casts
     protected $casts = [
         'quantity' => 'integer',
-        'wrappted_at' => 'datetime',
+        'bagged_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',

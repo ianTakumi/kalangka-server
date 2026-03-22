@@ -18,11 +18,16 @@ class HarvestController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Harvest::with('fruit.tree');
+        $query = Harvest::with(['fruit.tree', 'fruitWeights', 'wastes']);
         
         // Filter by fruit_id if provided
         if ($request->has('fruit_id')) {
             $query->where('fruit_id', $request->fruit_id);
+        }
+        
+        // Filter by user_id if provided
+        if ($request->has('user_id')) {
+            $query->where('user_id', $request->user_id);
         }
         
         // Filter by harvest date range
@@ -34,7 +39,7 @@ class HarvestController extends Controller
         }
         
         // Order by harvest date (newest first)
-        $query->orderBy('harvest_at', 'desc');
+        $query->orderBy('harvest_at', 'desc')->orderBy('created_at', 'desc');
         
         $perPage = $request->input('per_page', 20);
         $harvests = $query->paginate($perPage);
@@ -201,14 +206,14 @@ public function assignHarvester(Request $request)
     /**
      * Display the specified harvest.
      */
-    public function show(string $id)
+     public function show($id)
     {
-        $harvest = Harvest::with('fruit.tree')->find($id);
+        $harvest = Harvest::with(['fruit.tree', 'fruitWeights', 'wastes'])->find($id);
         
         if (!$harvest) {
             return response()->json([
                 'success' => false,
-                'message' => 'Harvest record not found'
+                'message' => 'Harvest not found'
             ], 404);
         }
         
@@ -242,7 +247,7 @@ public function update(Request $request, string $id)
         'fruit_id' => 'required|string|exists:fruits,id',
         'ripe_quantity' => 'required|integer',
         'harvest_at' => 'required|date|before_or_equal:today',
-        
+        'status' => 'required|string',
         // Fruit weights validation - HINDI required
         'fruit_weights' => 'sometimes|array',
         'fruit_weights.*.id' => 'required_with:fruit_weights|string|uuid',
@@ -271,6 +276,7 @@ public function update(Request $request, string $id)
             'fruit_id' => $request->fruit_id,
             'ripe_quantity' => $request->ripe_quantity,
             'harvest_at' => $request->harvest_at,
+            'status' => $request->status,
         ]);
 
         // 2. REPLACE fruit_weights ONLY if provided in request

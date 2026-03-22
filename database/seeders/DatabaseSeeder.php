@@ -10,6 +10,7 @@ use Database\Seeders\TreeSeeder;
 use Database\Seeders\UserSeeder;
 use Database\Seeders\FlowerSeeder;
 use Database\Seeders\FruitSeeder;
+use Database\Seeders\HarvestSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -31,9 +32,6 @@ class DatabaseSeeder extends Seeder
         $this->call(UserSeeder::class);
         $this->call(FlowerSeeder::class);
         $this->call(FruitSeeder::class);
-        // User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+       $this->call(HarvestSeeder::class);
     }
 }

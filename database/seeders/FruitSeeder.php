@@ -33,10 +33,19 @@ class FruitSeeder extends Seeder
         $totalFruits = 0;
         $totalFlowerQuantity = 0;
         $totalFruitQuantity = 0;
+        
+        // Age categories distribution
+        $ageCategories = [
+            'approaching' => ['min' => 115, 'max' => 119, 'count' => 0, 'total' => 0],
+            'ready' => ['min' => 120, 'max' => 124, 'count' => 0, 'total' => 0],
+            'overdue' => ['min' => 125, 'max' => 130, 'count' => 0, 'total' => 0],
+        ];
 
-        // Calculate base date (115 days ago from now)
-        $baseDate = Carbon::now()->subDays(115);
-        $this->command->info("📅 Base date (115 days ago): " . $baseDate->format('Y-m-d H:i:s'));
+        $this->command->info('');
+        $this->command->info('📅 Creating fruits with different ages:');
+        $this->command->info('   🌱 Approaching: 115-119 days ago');
+        $this->command->info('   ✅ Ready: 120-124 days ago');
+        $this->command->info('   ⚠️  Overdue: 125-130 days ago');
         $this->command->info('');
 
         // HARDCODED UNIQUE REAL UUIDs for 80 fruits (40 flowers × 2 fruits)
@@ -88,85 +97,86 @@ class FruitSeeder extends Seeder
             // Tree 8 (North Langka #3) - Flower 1 & 2
             'e9f0a1b2-c3d4-4e5f-6a7b-8c9d0e1f2a3b',
             'f0a1b2c3-d4e5-4f6a-7b8c-9d0e1f2a3b4c',
-            'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5e', // Changed last char from d to e
-            'b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6f', // Changed last char from e to f
+            'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5e',
+            'b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6f',
             
             // Tree 9 (North Langka #4) - Flower 1 & 2
-            'c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7a', // Changed last char
-            'd4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8b', // Changed last char
-            'e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9c', // Changed last char
-            'f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b0d', // Changed last char
+            'c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7a',
+            'd4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8b',
+            'e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9c',
+            'f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b0d',
             
             // Tree 10 (North Langka #5) - Flower 1 & 2
-            'a7b8c9d0-e1f2-4a3b-4c5d-6e7f8a9b0c1e', // Changed last char
-            'b8c9d0e1-f2a3-4b4c-5d6e-7f8a9b0c1d2f', // Changed last char
-            'c9d0e1f2-a3b4-4c5d-6e7f-8a9b0c1d2e3a', // Changed last char
-            'd0e1f2a3-b4c5-4d6e-7f8a-9b0c1d2e3f4b', // Changed last char
+            'a7b8c9d0-e1f2-4a3b-4c5d-6e7f8a9b0c1e',
+            'b8c9d0e1-f2a3-4b4c-5d6e-7f8a9b0c1d2f',
+            'c9d0e1f2-a3b4-4c5d-6e7f-8a9b0c1d2e3a',
+            'd0e1f2a3-b4c5-4d6e-7f8a-9b0c1d2e3f4b',
             
             // ===== SOUTH LANGKA (Trees 11-15) =====
             // Tree 11 (South Langka #1) - Flower 1 & 2
-            'e1f2a3b4-c5d6-4e7f-8a9b-0c1d2e3f4a5c', // Changed last char
-            'f2a3b4c5-d6e7-4f8a-9b0c-1d2e3f4a5b6d', // Changed last char
-            'a3b4c5d6-e7f8-4a9b-0c1d-2e3f4a5b6c7e', // Changed last char
-            'b4c5d6e7-f8a9-4b0c-1d2e-3f4a5b6c7d8f', // Changed last char
+            'e1f2a3b4-c5d6-4e7f-8a9b-0c1d2e3f4a5c',
+            'f2a3b4c5-d6e7-4f8a-9b0c-1d2e3f4a5b6d',
+            'a3b4c5d6-e7f8-4a9b-0c1d-2e3f4a5b6c7e',
+            'b4c5d6e7-f8a9-4b0c-1d2e-3f4a5b6c7d8f',
             
             // Tree 12 (South Langka #2) - Flower 1 & 2
-            'c5d6e7f8-a9b0-4c1d-2e3f-4a5b6c7d8e9a', // Changed last char
-            'd6e7f8a9-b0c1-4d2e-3f4a-5b6c7d8e9f0b', // Changed last char
-            'e7f8a9b0-c1d2-4e3f-4a5b-6c7d8e9f0a1c', // Changed last char
-            'f8a9b0c1-d2e3-4f4a-5b6c-7d8e9f0a1b2d', // Changed last char
+            'c5d6e7f8-a9b0-4c1d-2e3f-4a5b6c7d8e9a',
+            'd6e7f8a9-b0c1-4d2e-3f4a-5b6c7d8e9f0b',
+            'e7f8a9b0-c1d2-4e3f-4a5b-6c7d8e9f0a1c',
+            'f8a9b0c1-d2e3-4f4a-5b6c-7d8e9f0a1b2d',
             
             // Tree 13 (South Langka #3) - Flower 1 & 2
-            'a9b0c1d2-e3f4-4a5b-6c7d-8e9f0a1b2c3e', // Changed last char
-            'b0c1d2e3-f4a5-4b6c-7d8e-9f0a1b2c3d4f', // Changed last char
-            'c1d2e3f4-a5b6-4c7d-8e9f-0a1b2c3d4e5a', // Changed last char
-            'd2e3f4a5-b6c7-4d8e-9f0a-1b2c3d4e5f6b', // Changed last char
+            'a9b0c1d2-e3f4-4a5b-6c7d-8e9f0a1b2c3e',
+            'b0c1d2e3-f4a5-4b6c-7d8e-9f0a1b2c3d4f',
+            'c1d2e3f4-a5b6-4c7d-8e9f-0a1b2c3d4e5a',
+            'd2e3f4a5-b6c7-4d8e-9f0a-1b2c3d4e5f6b',
             
             // Tree 14 (South Langka #4) - Flower 1 & 2
-            'e3f4a5b6-c7d8-4e9f-0a1b-2c3d4e5f6a7c', // Changed last char
-            'f4a5b6c7-d8e9-4f0a-1b2c-3d4e5f6a7b8d', // Changed last char
-            'a5b6c7d8-e9f0-4a1b-2c3d-4e5f6a7b8c9e', // Changed last char
-            'b6c7d8e9-f0a1-4b2c-3d4e-5f6a7b8c9d0f', // Changed last char
+            'e3f4a5b6-c7d8-4e9f-0a1b-2c3d4e5f6a7c',
+            'f4a5b6c7-d8e9-4f0a-1b2c-3d4e5f6a7b8d',
+            'a5b6c7d8-e9f0-4a1b-2c3d-4e5f6a7b8c9e',
+            'b6c7d8e9-f0a1-4b2c-3d4e-5f6a7b8c9d0f',
             
             // Tree 15 (South Langka #5) - Flower 1 & 2
-            'c7d8e9f0-a1b2-4c3d-4e5f-6a7b8c9d0e1a', // Changed last char
-            'd8e9f0a1-b2c3-4d4e-5f6a-7b8c9d0e1f2b', // Changed last char
-            'e9f0a1b2-c3d4-4e5f-6a7b-8c9d0e1f2a3c', // Changed last char
-            'f0a1b2c3-d4e5-4f6a-7b8c-9d0e1f2a3b4d', // Changed last char
+            'c7d8e9f0-a1b2-4c3d-4e5f-6a7b8c9d0e1a',
+            'd8e9f0a1-b2c3-4d4e-5f6a-7b8c9d0e1f2b',
+            'e9f0a1b2-c3d4-4e5f-6a7b-8c9d0e1f2a3c',
+            'f0a1b2c3-d4e5-4f6a-7b8c-9d0e1f2a3b4d',
             
             // ===== WEST LANGKA (Trees 16-20) =====
             // Tree 16 (West Langka #1) - Flower 1 & 2
-            'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5f', // Changed last char from d to f
-            'b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6a', // Changed last char
-            'c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7b', // Changed last char
-            'd4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8c', // Changed last char
+            'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5f',
+            'b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6a',
+            'c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7b',
+            'd4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8c',
             
             // Tree 17 (West Langka #2) - Flower 1 & 2
-            'e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9d', // Changed last char
-            'f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b0e', // Changed last char
-            'a7b8c9d0-e1f2-4a3b-4c5d-6e7f8a9b0c1f', // Changed last char
-            'b8c9d0e1-f2a3-4b4c-5d6e-7f8a9b0c1d2a', // Changed last char
+            'e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9d',
+            'f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b0e',
+            'a7b8c9d0-e1f2-4a3b-4c5d-6e7f8a9b0c1f',
+            'b8c9d0e1-f2a3-4b4c-5d6e-7f8a9b0c1d2a',
             
             // Tree 18 (West Langka #3) - Flower 1 & 2
-            'c9d0e1f2-a3b4-4c5d-6e7f-8a9b0c1d2e3b', // Changed last char
-            'd0e1f2a3-b4c5-4d6e-7f8a-9b0c1d2e3f4c', // Changed last char
-            'e1f2a3b4-c5d6-4e7f-8a9b-0c1d2e3f4a5d', // Changed last char
-            'f2a3b4c5-d6e7-4f8a-9b0c-1d2e3f4a5b6e', // Changed last char
+            'c9d0e1f2-a3b4-4c5d-6e7f-8a9b0c1d2e3b',
+            'd0e1f2a3-b4c5-4d6e-7f8a-9b0c1d2e3f4c',
+            'e1f2a3b4-c5d6-4e7f-8a9b-0c1d2e3f4a5d',
+            'f2a3b4c5-d6e7-4f8a-9b0c-1d2e3f4a5b6e',
             
             // Tree 19 (West Langka #4) - Flower 1 & 2
-            'a3b4c5d6-e7f8-4a9b-0c1d-2e3f4a5b6c7f', // Changed last char
-            'b4c5d6e7-f8a9-4b0c-1d2e-3f4a5b6c7d8a', // Changed last char
-            'c5d6e7f8-a9b0-4c1d-2e3f-4a5b6c7d8e9b', // Changed last char
-            'd6e7f8a9-b0c1-4d2e-3f4a-5b6c7d8e9f0c', // Changed last char
+            'a3b4c5d6-e7f8-4a9b-0c1d-2e3f4a5b6c7f',
+            'b4c5d6e7-f8a9-4b0c-1d2e-3f4a5b6c7d8a',
+            'c5d6e7f8-a9b0-4c1d-2e3f-4a5b6c7d8e9b',
+            'd6e7f8a9-b0c1-4d2e-3f4a-5b6c7d8e9f0c',
             
             // Tree 20 (West Langka #5) - Flower 1 & 2
-            'e7f8a9b0-c1d2-4e3f-4a5b-6c7d8e9f0a1d', // Changed last char
-            'f8a9b0c1-d2e3-4f4a-5b6c-7d8e9f0a1b2e', // Changed last char
-            'a9b0c1d2-e3f4-4a5b-6c7d-8e9f0a1b2c3f', // Changed last char
-            'b0c1d2e3-f4a5-4b6c-7d8e-9f0a1b2c3d4a', // Changed last char
+            'e7f8a9b0-c1d2-4e3f-4a5b-6c7d8e9f0a1d',
+            'f8a9b0c1-d2e3-4f4a-5b6c-7d8e9f0a1b2e',
+            'a9b0c1d2-e3f4-4a5b-6c7d-8e9f0a1b2c3f',
+            'b0c1d2e3-f4a5-4b6c-7d8e-9f0a1b2c3d4a',
         ];
 
         $fruitIndex = 0;
+        $fruitNumber = 0; // Track overall fruit number for age distribution
 
         foreach ($flowers as $flower) {
             // Get the tree for display
@@ -177,30 +187,41 @@ class FruitSeeder extends Seeder
             
             // Track total fruit quantity for this flower
             $flowerFruitTotal = 0;
-            $maxFruitPerFlower = $flower->quantity; // Can't exceed flower quantity
+            $maxFruitPerFlower = $flower->quantity;
             
             // Create exactly 2 fruits per flower
             for ($i = 1; $i <= 2; $i++) {
-                // Use base date (115 days ago) for all fruits
-                $fruitCreatedAt = clone $baseDate;
+                $fruitNumber++;
                 
-                // All fruits are bagged (100% bagged rate)
-                $isBagged = true;
+                // Determine age category based on fruit number (cycle through categories)
+                $categoryIndex = ($fruitNumber % 3);
+                $category = '';
                 
-                // Bagged date is the same as created_at (since they're all bagged)
+                if ($categoryIndex == 0) {
+                    $category = 'overdue';
+                } elseif ($categoryIndex == 1) {
+                    $category = 'ready';
+                } else {
+                    $category = 'approaching';
+                }
+                
+                // Get random days based on category
+                $daysAgo = rand($ageCategories[$category]['min'], $ageCategories[$category]['max']);
+                $fruitCreatedAt = Carbon::now()->subDays($daysAgo);
                 $baggedAt = clone $fruitCreatedAt;
+                
+                // Update category count
+                $ageCategories[$category]['count']++;
+                $ageCategories[$category]['total'] += $daysAgo;
                 
                 // Calculate fruit quantity based on remaining capacity
                 $remainingCapacity = $maxFruitPerFlower - $flowerFruitTotal;
                 
                 if ($remainingCapacity <= 0) {
-                    // No more capacity left for this flower
                     $fruitQuantity = 0;
                 } elseif ($i == 2) {
-                    // Last fruit for this flower - use all remaining capacity
                     $fruitQuantity = $remainingCapacity;
                 } else {
-                    // First fruit - take a portion of remaining capacity (30-70%)
                     $maxTake = min($remainingCapacity - 1, floor($remainingCapacity * 0.7));
                     $minTake = max(1, floor($remainingCapacity * 0.3));
                     
@@ -227,8 +248,9 @@ class FruitSeeder extends Seeder
                     $totalFruits++;
                     $totalFruitQuantity += $fruitQuantity;
                     
-                    $this->command->info("   🍎 Fruit {$i}: {$fruitQuantity} fruits (Running total: {$flowerFruitTotal}/{$maxFruitPerFlower})");
-                    $this->command->info("      📅 Created: " . $fruitCreatedAt->format('Y-m-d H:i:s'));
+                    $statusIcon = $category === 'approaching' ? '🌱' : ($category === 'ready' ? '✅' : '⚠️');
+                    $this->command->info("   {$statusIcon} Fruit {$i}: {$fruitQuantity} fruits (Running total: {$flowerFruitTotal}/{$maxFruitPerFlower})");
+                    $this->command->info("      📅 Created: {$fruitCreatedAt->format('Y-m-d H:i:s')} ({$daysAgo} days ago) - {$category}");
                 } else {
                     $this->command->info("   ⚠️  Fruit {$i}: No fruits (max capacity reached: {$flowerFruitTotal}/{$maxFruitPerFlower})");
                 }
@@ -236,7 +258,6 @@ class FruitSeeder extends Seeder
             
             $totalFlowerQuantity += $flower->quantity;
             
-            // Validate that we didn't exceed the flower's quantity
             if ($flowerFruitTotal > $flower->quantity) {
                 $this->command->error("   ❌ ERROR: Total fruits ({$flowerFruitTotal}) exceeds flower quantity ({$flower->quantity})!");
             } else {
@@ -254,9 +275,11 @@ class FruitSeeder extends Seeder
         $this->command->info('🍎 Total fruit records created: ' . $totalFruits);
         $this->command->info('📊 Total fruit quantity: ' . $totalFruitQuantity);
         $this->command->info('📈 Utilization rate: ' . round(($totalFruitQuantity / $totalFlowerQuantity) * 100, 2) . '%');
-        $this->command->info('📅 All fruits created on: ' . $baseDate->format('Y-m-d H:i:s'));
-        $this->command->info('📅 All fruits bagged on: ' . $baseDate->format('Y-m-d H:i:s'));
-        $this->command->info('📊 Days since bagged: 115 days');
+        $this->command->info('');
+        $this->command->info('📅 AGE DISTRIBUTION:');
+        $this->command->info('   🌱 Approaching (115-119 days): ' . $ageCategories['approaching']['count'] . ' fruits');
+        $this->command->info('   ✅ Ready (120-124 days): ' . $ageCategories['ready']['count'] . ' fruits');
+        $this->command->info('   ⚠️  Overdue (125-130 days): ' . $ageCategories['overdue']['count'] . ' fruits');
         $this->command->info('====================================');
         $this->command->info('🖼️  Fruit Image: ' . $imageUrl);
         $this->command->info('====================================');
