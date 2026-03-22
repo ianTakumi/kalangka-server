@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\WasteController;
 use App\Http\Controllers\Api\FruitWeightController;
+use App\Http\Controllers\Api\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,8 +41,14 @@ Route::apiResource('harvests', HarvestController::class);
 Route::get('fruits/{fruitId}/harvests', [HarvestController::class, 'getByFruit']);
 Route::get('harvests/summary/by-fruit', [HarvestController::class, 'summaryByFruit']);
 Route::get('harvests/summary/monthly', [HarvestController::class, 'monthlySummary']);
+Route::get('/harvest-summary', [HarvestController::class, 'harvestSummary']);
+Route::get('/summary/weekly-totals', [HarvestController::class, 'weeklySummaryTotals']);
+
 
 // User routes
+//
+Route::get('/users/harvest-analytics', [DashboardController::class, 'usersHarvestAnalytics']);
+
 // Public user routes - no authentication required
 Route::apiResource('users', UserController::class);
 
@@ -84,5 +91,16 @@ Route::post('wastes/bulk/force-delete', [WasteController::class, 'bulkForceDelet
 Route::post('wastes/sync', [WasteController::class, 'sync']);
 Route::delete('wastes/{id}/force', [WasteController::class, 'forceDelete']);
 
+
 // Fryut weight routes
 Route::apiResource('fruit-weights', FruitWeightController::class);
+
+//
+
+//harvests
+Route::get('/summary/analytics-totals', [HarvestController::class, 'analytics_totals']);
+
+
+Route::get('/summary/totals', [DashboardController::class, 'totals']);
+Route::get('/tree/top', [DashboardController::class, 'topYieldingTrees']); 
+Route::get('/per-tree/weight', [DashboardController::class, 'totalWeightPerTree']); 
