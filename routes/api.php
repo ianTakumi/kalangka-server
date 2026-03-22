@@ -104,3 +104,4 @@ Route::get('/summary/analytics-totals', [HarvestController::class, 'analytics_to
 Route::get('/summary/totals', [DashboardController::class, 'totals']);
 Route::get('/tree/top', [DashboardController::class, 'topYieldingTrees']); 
 Route::get('/per-tree/weight', [DashboardController::class, 'totalWeightPerTree']); 
+Route::get('/per-tree/harvest', [DashboardController::class, 'totalHarvestPerTree']);
