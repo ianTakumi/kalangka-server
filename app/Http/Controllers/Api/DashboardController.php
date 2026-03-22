@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Tree;
 use App\Models\Flower;
 use App\Models\Fruit;
+use App\Models\Harvest;
 use App\Models\FruitWeight;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -82,6 +83,31 @@ class DashboardController extends Controller
         }
     }
 
+private function applyDateFilter($query, $filter, $column = 'h.harvest_at')
+    {
+        if (!$filter) return $query;
+
+        $now = Carbon::now();
+
+        switch ($filter) {
+            case 'week':
+                return $query->whereBetween($column, [
+                    $now->startOfWeek()->toDateTimeString(),
+                    $now->endOfWeek()->toDateTimeString()
+                ]);
+
+            case 'month':
+                return $query->whereMonth($column, $now->month)
+                             ->whereYear($column, $now->year);
+
+            case 'year':
+                return $query->whereYear($column, $now->year);
+
+            default:
+                return $query;
+        }
+    }
+
 public function usersHarvestAnalytics(Request $request)
 {
     try {
@@ -134,19 +160,28 @@ public function usersHarvestAnalytics(Request $request)
     }
 }
 
-public function totalWeightPerTree()
+  public function totalWeightPerTree(Request $request)
 {
     try {
-        $data = DB::table('fruit_weights as fw')
-        ->join('harvests as h', 'fw.harvest_id', '=', 'h.id')
-        ->join('fruits as f', 'h.fruit_id', '=', 'f.id')
-        ->join('trees as t', 'f.tree_id', '=', 't.id')
-        ->select(
-            't.type as tree_type',
-            DB::raw('SUM(fw.weight) as total_weight')
-        )
-        ->groupBy('t.type')
-        ->get();
+        $filter = $request->filter;
+
+        $query = DB::table('fruit_weights as fw')
+            ->join('harvests as h', 'fw.harvest_id', '=', 'h.id')
+            ->join('fruits as f', 'h.fruit_id', '=', 'f.id')
+            ->join('trees as t', 'f.tree_id', '=', 't.id')
+            ->whereNotNull('h.harvest_at');
+
+        // ✅ APPLY FILTER based on fw.created_at
+        $query = $this->applyDateFilter($query, $filter, 'fw.created_at');
+
+        $data = $query
+            ->select(
+                't.type as tree_type',
+                DB::raw('SUM(fw.weight) as total_weight')
+            )
+            ->groupBy('t.type')
+            ->orderByDesc('total_weight')
+            ->get();
 
         return response()->json([
             'status' => true,
@@ -158,9 +193,41 @@ public function totalWeightPerTree()
             'status' => false,
             'message' => $e->getMessage()
         ], 500);
-    } 
-    
+    }
 }
 
+public function totalHarvestPerTree(Request $request)
+{
+    try {
+        $filter = $request->filter;
 
+        $query = DB::table('harvests as h')
+            ->join('fruits as f', 'h.fruit_id', '=', 'f.id')
+            ->join('trees as t', 'f.tree_id', '=', 't.id')
+            ->whereNotNull('h.harvest_at');
+
+        // ✅ APPLY FILTER based on h.created_at instead of harvest_at
+        $query = $this->applyDateFilter($query, $filter, 'h.created_at');
+
+        $data = $query
+            ->select(
+                't.type as tree_type',
+                DB::raw('SUM(h.ripe_quantity) as total_harvest')
+            )
+            ->groupBy('t.type')
+            ->orderByDesc('total_harvest')
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => $data
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => false,
+            'message' => $e->getMessage()
+        ], 500);
+    }
+}
 }
