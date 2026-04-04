@@ -14,8 +14,9 @@ class Flower extends Model
     
     // Fillable fields
     protected $fillable = [
-        'id', // Client-generated UUID from React Native
+        'id', 
         'tree_id',
+        'user_id',
         'quantity',
         'wrapped_at',
         'image_url',
@@ -33,6 +34,18 @@ class Flower extends Model
     public function tree()
     {
         return $this->belongsTo(Tree::class, 'tree_id');
+    }
+    
+    // Relationship to User model
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+    
+    // Relationship to Fruits (if may fruits table)
+    public function fruits()
+    {
+        return $this->hasMany(Fruit::class, 'flower_id');
     }
     
     // Optional: Auto-generate UUID if not provided by client

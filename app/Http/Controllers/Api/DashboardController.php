@@ -8,6 +8,7 @@ use App\Models\Flower;
 use App\Models\Fruit;
 use App\Models\Harvest;
 use App\Models\FruitWeight;
+use App\Models\Waste;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
@@ -26,9 +27,14 @@ class DashboardController extends Controller
             $totalTrees = Tree::count();
             $totalFlowers = Flower::count();
             $totalFruits = Fruit::count();
-
-            // Total kg harvested
-            $totalKg = FruitWeight::sum('weight');
+            $totalUsers = User::count() - 1;
+            
+            // Only count COMPLETED harvests (harvested status)
+            $completedHarvestIds = Harvest::where('status', 'harvested')->pluck('id');
+            
+            $totalHarvest = FruitWeight::whereIn('harvest_id', $completedHarvestIds)->count();
+            $totalWeight = FruitWeight::whereIn('harvest_id', $completedHarvestIds)->sum('weight');
+            $totalWaste = Waste::whereIn('harvest_id', $completedHarvestIds)->sum('waste_quantity');
 
             return response()->json([
                 'success' => true,
@@ -36,7 +42,10 @@ class DashboardController extends Controller
                     'total_trees' => $totalTrees,
                     'total_flowers' => $totalFlowers,
                     'total_fruits' => $totalFruits,
-                    'total_weight_kg' => (float) $totalKg,
+                    'total_harvest' => $totalHarvest, 
+                    'total_weight_kg' => (float) $totalWeight,
+                    'total_wastes' => (float) $totalWaste,
+                    'total_users' => $totalUsers
                 ],
             ]);
         } catch (\Exception $e) {

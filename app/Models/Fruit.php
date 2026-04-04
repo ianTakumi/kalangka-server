@@ -7,18 +7,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Fruit extends Model
 {
-    // Since we're using UUID string, not auto-increment integer
     public $incrementing = false;
     protected $keyType = 'string';
     
     // Fillable fields
     protected $fillable = [
-        'id',           // Client-generated UUID (from React Native)
-        'flower_id',    // Reference to flower
-        'tree_id',      // Reference to tree
-        'quantity',     // Number of fruits
-        'bagged_at',  // Note: Double 'p' to match your SQL
-        'image_url',    // Image URL
+        'id',         
+        'flower_id',   
+        'tree_id',     
+        'user_id',
+        'quantity',   
+        'tag_id',
+        'bagged_at',  
+        'image_url',    
     ];
     
     // Casts
@@ -58,5 +59,13 @@ class Fruit extends Model
     public function tree(): BelongsTo
     {
         return $this->belongsTo(Tree::class, 'tree_id');
+    }
+
+    /**
+     * Relationship to User
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

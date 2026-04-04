@@ -11,6 +11,7 @@ use Database\Seeders\UserSeeder;
 use Database\Seeders\FlowerSeeder;
 use Database\Seeders\FruitSeeder;
 use Database\Seeders\HarvestSeeder;
+use Database\Seeders\ContactSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -26,12 +27,14 @@ class DatabaseSeeder extends Seeder
         DB::table('flowers')->truncate();
         DB::table('trees')->truncate();
         DB::table('users')->truncate();
-
+        DB::table('harvests')->truncate();
+        DB::table('contacts')->truncate();
 
         $this->call(TreeSeeder::class);
         $this->call(UserSeeder::class);
         $this->call(FlowerSeeder::class);
         $this->call(FruitSeeder::class);
-       $this->call(HarvestSeeder::class);
+        $this->call(HarvestSeeder::class);
+        $this->call(ContactSeeder::class);
     }
 }

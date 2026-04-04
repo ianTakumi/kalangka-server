@@ -16,39 +16,18 @@ class HarvestController extends Controller
     /**
      * Display a listing of harvests.
      */
-    public function index(Request $request)
-    {
-        $query = Harvest::with(['fruit.tree', 'fruitWeights', 'wastes']);
-        
-        // Filter by fruit_id if provided
-        if ($request->has('fruit_id')) {
-            $query->where('fruit_id', $request->fruit_id);
-        }
-        
-        // Filter by user_id if provided
-        if ($request->has('user_id')) {
-            $query->where('user_id', $request->user_id);
-        }
-        
-        // Filter by harvest date range
-        if ($request->has('start_date') && $request->has('end_date')) {
-            $query->whereBetween('harvest_at', [
-                $request->start_date,
-                $request->end_date
-            ]);
-        }
-        
-        // Order by harvest date (newest first)
-        $query->orderBy('harvest_at', 'desc')->orderBy('created_at', 'desc');
-        
-        $perPage = $request->input('per_page', 20);
-        $harvests = $query->paginate($perPage);
-        
-        return response()->json([
-            'success' => true,
-            'data' => $harvests
-        ]);
-    }
+   public function index(Request $request)
+{
+    $harvests = Harvest::with(['fruit.tree', 'fruitWeights', 'wastes', 'user'])
+        ->orderBy('harvest_at', 'desc')
+        ->orderBy('created_at', 'desc')
+        ->get();
+    
+    return response()->json([
+        'success' => true,
+        'data' => $harvests
+    ]);
+}
     
     /**
      * Store a newly created harvest with weights and wastes.

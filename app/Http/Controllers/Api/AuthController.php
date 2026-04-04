@@ -15,6 +15,7 @@ class AuthController extends Controller
     /**
      * Register a new user
      */
+    
    public function register(Request $request)
 {
     // Validate request - add id and role validation
@@ -203,6 +204,7 @@ class AuthController extends Controller
     public function changePassword(Request $request)
     {
         $validator = Validator::make($request->all(), [
+            'user_id' => 'required|string|exists:users,id',  // String validation for UUID
             'current_password' => 'required',
             'new_password' => 'required|string|min:8|confirmed',
         ]);
@@ -215,7 +217,15 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user = $request->user();
+        // Get user by UUID from request body
+        $user = User::where('id', $request->user_id)->first();
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found'
+            ], 404);
+        }
 
         // Check current password
         if (!Hash::check($request->current_password, $user->password)) {

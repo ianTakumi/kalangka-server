@@ -9,9 +9,10 @@ use Illuminate\Http\Request;
 class FlowerController extends Controller
 {
     // Get all flowers for download to react native
-    public function index()
+   public function index()
     {
-        $flowers = Flower::all();
+        $flowers = Flower::with(['tree', 'user'])->get();
+        
         return response()->json([
             'success' => true,
             'data' => $flowers
@@ -24,6 +25,7 @@ class FlowerController extends Controller
         $validated = $request->validate([
             'id' => 'required|string|uuid',
             'tree_id' => 'required|string|exists:trees,id',
+            'user_id' => 'required|string|exists:users,id',
             'quantity' => 'required|integer|min:1',
             'wrapped_at' => 'nullable|date',
             'image_url' => 'required|url',

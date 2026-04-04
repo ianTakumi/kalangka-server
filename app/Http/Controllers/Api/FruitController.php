@@ -15,27 +15,8 @@ class FruitController extends Controller
     public function index(Request $request)
     {
         try {
-            $query = Fruit::query();
-            
-            // Optional filters
-            if ($request->has('flower_id')) {
-                $query->where('flower_id', $request->flower_id);
-            }
-            
-            if ($request->has('tree_id')) {
-                $query->where('tree_id', $request->tree_id);
-            }
-            
-            // Include relationships if requested
-            if ($request->has('with_flower') && $request->with_flower) {
-                $query->with('flower');
-            }
-            
-            if ($request->has('with_tree') && $request->with_tree) {
-                $query->with('tree');
-            }
-            
-            $fruits = $query->orderBy('created_at', 'desc')->get();
+            // Get all fruits with their relationships
+            $fruits = Fruit::with(['flower', 'tree', 'user'])->orderBy('created_at', 'desc')->get();
             
             return response()->json([
                 'success' => true,
@@ -60,7 +41,9 @@ class FruitController extends Controller
                 'id' => 'required|string|unique:fruits,id',
                 'flower_id' => 'required|string|exists:flowers,id',
                 'tree_id' => 'required|string|exists:trees,id',
+                'user_id' => 'required|string|exists:users,id',
                 'quantity' => 'required|integer|min:1',
+                'tag_id' => 'required|integer|min:1|max:4', 
                 'bagged_at' => 'nullable|date',
                 'image_url' => 'nullable|string',
             ]);
@@ -76,7 +59,9 @@ class FruitController extends Controller
                 'id' => $request->id,
                 'flower_id' => $request->flower_id,
                 'tree_id' => $request->tree_id,
+                'user_id' => $request->user_id,
                 'quantity' => $request->quantity,
+                'tag_id' => $request->tag_id,
                 'bagged_at' => $request->bagged_at ?? now(),
                 'image_url' => $request->image_url ?? '',
             ]);
@@ -129,7 +114,9 @@ class FruitController extends Controller
             $validator = Validator::make($request->all(), [
                 'flower_id' => 'sometimes|string|exists:flowers,id',
                 'tree_id' => 'sometimes|string|exists:trees,id',
+                'user_id' => 'sometimes|string|exists:users,id',
                 'quantity' => 'sometimes|integer|min:1',
+                'tag_id' => 'sometimes|integer|min:1|max:4',
                 'bagged_at' => 'sometimes|date',
                 'image_url' => 'sometimes|string',
             ]);
@@ -149,11 +136,19 @@ class FruitController extends Controller
             if ($request->has('tree_id')) {
                 $fruit->tree_id = $request->tree_id;
             }
+
+            if ($request->has('user_id')) {
+                $fruit->user_id = $request->user_id;
+            }
             
             if ($request->has('quantity')) {
                 $fruit->quantity = $request->quantity;
             }
-            
+
+            if ($request->has('tag_id')) { 
+                $fruit->tag_id = $request->tag_id;
+            }
+
             if ($request->has('bagged_at')) {
                 $fruit->bagged_at = $request->bagged_at;
             }
@@ -184,19 +179,28 @@ class FruitController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Fruit $fruit)
+   public function destroy($id)
     {
         try {
-            // Soft delete (if you have deleted_at column)
-            // $fruit->delete();
+            // Hanapin ang fruit gamit ang $id
+            $fruit = Fruit::find($id);
             
-            // Or hard delete (permanent)
+            // I-check kung exist
+            if (!$fruit) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Fruit not found'
+                ], 404);
+            }
+            
+            // Permanent delete
             $fruit->forceDelete();
-
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Fruit deleted successfully'
             ]);
+            
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -265,6 +269,8 @@ class FruitController extends Controller
                 'fruits.*.id' => 'required|string',
                 'fruits.*.flower_id' => 'required|string|exists:flowers,id',
                 'fruits.*.tree_id' => 'required|string|exists:trees,id',
+                'fruits.*.user_id' => 'required|string|exists:users,id',
+                'fruits.*.tag_id' => 'required|integer|min:1|max:4',
                 'fruits.*.quantity' => 'required|integer|min:1',
                 'fruits.*.bagged_at' => 'nullable|date',
                 'fruits.*.image_url' => 'nullable|string',
@@ -284,7 +290,9 @@ class FruitController extends Controller
                     [
                         'flower_id' => $fruitData['flower_id'],
                         'tree_id' => $fruitData['tree_id'],
+                        'user_id' => $fruitData['user_id'],
                         'quantity' => $fruitData['quantity'],
+                        'tag_id' => $fruitData['tag_id'],
                         'bagged_at' => $fruitData['bagged_at'] ?? now(),
                         'image_url' => $fruitData['image_url'] ?? '',
                     ]

@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\WasteController;
 use App\Http\Controllers\Api\FruitWeightController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\ContactController;
 
 /*
 |--------------------------------------------------------------------------
@@ -64,6 +65,7 @@ Route::prefix('auth')->group(function () {
     Route::post('/check-email', [AuthController::class, 'checkEmail']);
     Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
     Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+    Route::post("/change-password", [AuthController::class, 'changePassword']);
 });
 
 // Basic CRUD using apiResource
@@ -105,3 +107,6 @@ Route::get('/summary/totals', [DashboardController::class, 'totals']);
 Route::get('/tree/top', [DashboardController::class, 'topYieldingTrees']); 
 Route::get('/per-tree/weight', [DashboardController::class, 'totalWeightPerTree']); 
 Route::get('/per-tree/harvest', [DashboardController::class, 'totalHarvestPerTree']);
+
+// Contact routes
+Route::apiResource('contacts', ContactController::class);

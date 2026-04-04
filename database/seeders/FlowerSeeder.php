@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Tree;
 use App\Models\Flower;
+use App\Models\User;
 use Carbon\Carbon;
 
 class FlowerSeeder extends Seeder
@@ -14,14 +15,22 @@ class FlowerSeeder extends Seeder
         Flower::truncate();
 
         $trees = Tree::all();
+        // Only get users with role NOT equal to 'admin'
+        $users = User::where('role', '!=', 'admin')->get();
         
         if ($trees->isEmpty()) {
             $this->command->error('⚠️  No trees found. Please run TreeSeeder first.');
             return;
         }
+        
+        if ($users->isEmpty()) {
+            $this->command->error('⚠️  No non-admin users found. Please create regular users first.');
+            return;
+        }
 
         $this->command->info('====================================');
         $this->command->info('🌸 Creating flowers for ' . $trees->count() . ' trees...');
+        $this->command->info('👥 Available non-admin users: ' . $users->count());
         $this->command->info('====================================');
 
         $imageUrl = 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/Flower/langka-flower.jpg';
@@ -112,36 +121,87 @@ class FlowerSeeder extends Seeder
         ];
 
         $flowerIndex = 0;
-
-        foreach ($trees as $tree) {
-            $this->command->info("📦 Processing tree: {$tree->description}");
+        $userIds = $users->pluck('id')->toArray();
+        $userCount = count($userIds);
+        
+        // Ensure each non-admin user gets at least one flower
+        $this->command->info('👥 Ensuring each non-admin user gets at least one flower...');
+        
+        // First, create one flower for each non-admin user
+        foreach ($users as $userIndex => $user) {
+            // Get a tree for this user (cycle through trees)
+            $tree = $trees[$userIndex % $trees->count()];
             
-            // Create 2 flowers per tree
-            for ($i = 1; $i <= 2; $i++) {
-                // Random date within the last 30 days
-                $randomDate = Carbon::now()->subDays(rand(0, 30))->subHours(rand(0, 23));
-                
-                // 70% chance of being wrapped
-                $isWrapped = rand(1, 100) <= 70;
-                
-                Flower::create([
-                    'id' => $flowerIds[$flowerIndex++],
-                    'tree_id' => $tree->id,
-                    'quantity' => rand(1, 5),
-                    'wrapped_at' => $isWrapped ? $randomDate : $randomDate,
-                    'image_url' => $imageUrl,
-                    'created_at' => $randomDate,
-                    'updated_at' => $randomDate,
-                ]);
-                
-                $totalFlowers++;
-            }
+            // Random date within the last 30 days
+            $randomDate = Carbon::now()->subDays(rand(0, 30))->subHours(rand(0, 23));
             
-            $this->command->info("   ✅ Created 2 flowers for {$tree->description}");
+            Flower::create([
+                'id' => $flowerIds[$flowerIndex++],
+                'tree_id' => $tree->id,
+                'user_id' => $user->id,
+                'quantity' => rand(1, 5),
+                'wrapped_at' => $randomDate,
+                'image_url' => $imageUrl,
+                'created_at' => $randomDate,
+                'updated_at' => $randomDate,
+            ]);
+            
+            $totalFlowers++;
+            $this->command->info("   ✅ Created flower for user: {$user->first_name} {$user->last_name} (Role: {$user->role})");
         }
-
+        
+        // Now create remaining flowers (2 per tree total, so calculate remaining)
+        $flowersPerTree = 2;
+        $targetTotalFlowers = $trees->count() * $flowersPerTree;
+        $remainingFlowers = $targetTotalFlowers - $totalFlowers;
+        
+        if ($remainingFlowers > 0) {
+            $this->command->info("📦 Creating remaining {$remainingFlowers} flowers...");
+            
+            foreach ($trees as $tree) {
+                // Count how many flowers this tree already has
+                $existingFlowersCount = Flower::where('tree_id', $tree->id)->count();
+                $neededForTree = $flowersPerTree - $existingFlowersCount;
+                
+                for ($i = 1; $i <= $neededForTree; $i++) {
+                    if ($flowerIndex >= count($flowerIds)) {
+                        $this->command->error('⚠️  Not enough flower IDs!');
+                        break 2;
+                    }
+                    
+                    // Randomly assign a non-admin user (cycle through users)
+                    $randomUser = $users[$flowerIndex % $userCount];
+                    
+                    // Random date within the last 30 days
+                    $randomDate = Carbon::now()->subDays(rand(0, 30))->subHours(rand(0, 23));
+                    
+                    Flower::create([
+                        'id' => $flowerIds[$flowerIndex++],
+                        'tree_id' => $tree->id,
+                        'user_id' => $randomUser->id,
+                        'quantity' => rand(1, 5),
+                        'wrapped_at' => $randomDate,
+                        'image_url' => $imageUrl,
+                        'created_at' => $randomDate,
+                        'updated_at' => $randomDate,
+                    ]);
+                    
+                    $totalFlowers++;
+                }
+            }
+        }
+        
         $this->command->info('====================================');
         $this->command->info('🌸 TOTAL FLOWERS CREATED: ' . $totalFlowers);
+        $this->command->info('====================================');
+        
+        // Display user flower distribution (only non-admin users)
+        $this->command->info('📊 Non-Admin User Flower Distribution:');
+        foreach ($users as $user) {
+            $flowerCount = Flower::where('user_id', $user->id)->count();
+            $this->command->info("   👤 {$user->first_name} {$user->last_name} (Role: {$user->role}): {$flowerCount} flower(s)");
+        }
+        
         $this->command->info('====================================');
         
         // Show first few IDs as sample
