@@ -12,6 +12,7 @@ use App\Models\Waste;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
+use App\Models\Contact;
 use Carbon\Carbon;
 
 
@@ -28,8 +29,7 @@ class DashboardController extends Controller
             $totalFlowers = Flower::count();
             $totalFruits = Fruit::count();
             $totalUsers = User::count() - 1;
-            
-            // Only count COMPLETED harvests (harvested status)
+            $totalContacts = Contact::count();
             $completedHarvestIds = Harvest::where('status', 'harvested')->pluck('id');
             
             $totalHarvest = FruitWeight::whereIn('harvest_id', $completedHarvestIds)->count();
@@ -45,7 +45,8 @@ class DashboardController extends Controller
                     'total_harvest' => $totalHarvest, 
                     'total_weight_kg' => (float) $totalWeight,
                     'total_wastes' => (float) $totalWaste,
-                    'total_users' => $totalUsers
+                    'total_users' => $totalUsers,
+                    'total_contacts' => $totalContacts,
                 ],
             ]);
         } catch (\Exception $e) {

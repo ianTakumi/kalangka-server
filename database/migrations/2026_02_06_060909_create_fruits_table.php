@@ -41,6 +41,12 @@ return new class extends Migration
             $table->timestamp('bagged_at')->nullable(); 
             $table->text('image_url')->nullable(false);
             
+            // For farmer assessment
+            $table->integer('farmer_extra_days')->nullable();
+            $table->datetime('farmer_assessed_at')->nullable();
+            $table->datetime('next_check_date')->nullable();
+            $table->string('farmer_notes')->nullable();
+
             // Timestamps
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent(); 

@@ -119,6 +119,11 @@ class FruitController extends Controller
                 'tag_id' => 'sometimes|integer|min:1|max:4',
                 'bagged_at' => 'sometimes|date',
                 'image_url' => 'sometimes|string',
+                // Farmer assessment fields (optional)
+                'farmer_extra_days' => 'sometimes|integer|min:0',
+                'farmer_assessed_at' => 'sometimes|date',
+                'next_check_date' => 'sometimes|date',
+                'farmer_notes' => 'sometimes|string|nullable',
             ]);
 
             if ($validator->fails()) {
@@ -155,6 +160,23 @@ class FruitController extends Controller
             
             if ($request->has('image_url')) {
                 $fruit->image_url = $request->image_url;
+            }
+            
+            // Update farmer assessment fields if present
+            if ($request->has('farmer_extra_days')) {
+                $fruit->farmer_extra_days = $request->farmer_extra_days;
+            }
+            
+            if ($request->has('farmer_assessed_at')) {
+                $fruit->farmer_assessed_at = $request->farmer_assessed_at;
+            }
+            
+            if ($request->has('next_check_date')) {
+                $fruit->next_check_date = $request->next_check_date;
+            }
+            
+            if ($request->has('farmer_notes')) {
+                $fruit->farmer_notes = $request->farmer_notes;
             }
             
             $fruit->save();
