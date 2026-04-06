@@ -6,54 +6,55 @@ services:
     build:
       context: ./docker/php
       dockerfile: Dockerfile
-    container_name: laravel-app
+    container_name: laravel-app-2
     restart: unless-stopped
     working_dir: /var/www
     volumes:
       - ./:/var/www
       - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
-      - app-network
+      - app-network-2
     depends_on:
-      - postgres
+      - mysql
 
   # Nginx Service
   nginx:
     image: nginx:alpine
-    container_name: laravel-nginx
+    container_name: laravel-nginx-2
     restart: unless-stopped
     ports:
-      - "80:80"
+      - "8080:80"  # Changed port to 8080 para hindi conflict sa existing na port 80
     volumes:
       - ./:/var/www
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
     networks:
-      - app-network
+      - app-network-2
     depends_on:
       - app
 
-  # PostgreSQL Service
-  postgres:
-    image: postgres:16-alpine
-    container_name: laravel-postgres
+  # MySQL Service
+  mysql:
+    image: mysql:8.0
+    container_name: laravel-mysql-2
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "3307:3306"  # Changed to port 3307 para hindi conflict sa existing MySQL
     environment:
-      POSTGRES_DB: ${DB_DATABASE}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}root
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - mysql-data-2:/var/lib/mysql
     networks:
-      - app-network
+      - app-network-2
 
 # Volumes
 volumes:
-  postgres-data:
+  mysql-data-2:
     driver: local
 
 # Networks
 networks:
-  app-network:
+  app-network-2:
     driver: bridge

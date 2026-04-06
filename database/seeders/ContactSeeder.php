@@ -15,7 +15,7 @@ class ContactSeeder extends Seeder
     public function run(): void
     {
         // Truncate table - simple lang dahil walang foreign key
-        DB::table('contacts')->truncate();
+        // DB::table('contacts')->truncate();
         
         $contacts = [];
 

@@ -23,12 +23,13 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
             // Clear tables first
-        DB::table('fruits')->truncate();
-        DB::table('flowers')->truncate();
-        DB::table('trees')->truncate();
-        DB::table('users')->truncate();
-        DB::table('harvests')->truncate();
-        DB::table('contacts')->truncate();
+        // DB::table('harvests')->truncate();
+        // DB::table('fruits')->truncate();
+        // DB::table('flowers')->truncate();
+        // DB::table('trees')->truncate();
+        // DB::table('users')->truncate();
+      
+        // DB::table('contacts')->truncate();
 
         $this->call(TreeSeeder::class);
         $this->call(UserSeeder::class);

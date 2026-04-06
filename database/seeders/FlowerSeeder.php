@@ -12,7 +12,7 @@ class FlowerSeeder extends Seeder
 {
     public function run(): void
     {
-        Flower::truncate();
+        // Flower::truncate();
 
         $trees = Tree::all();
         // Only get users with role NOT equal to 'admin'

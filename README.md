@@ -2,7 +2,8 @@
 
 ## 📋 Prerequisites
 
-### Install these first: 
+### Install these first:
+
 - ✅ **XAMPP** (https://www.apachefriends.org/download.html)
 - ✅ **PHP 8.1+** (https://windows.php.net/download/)
 - ✅ **Composer** (https://getcomposer.org/)
@@ -13,6 +14,7 @@
 ## ⚡ Step-by-Step Local Setup
 
 ### Step 1: Clone the Repository
+
 ```bash
 # Open CMD or PowerShell
 cd C:\xampp\htdocs  # or your preferred directory
@@ -25,12 +27,14 @@ cd kalangka-server
 ```
 
 ### Step 2: Environment Setup
+
 ```bash
 # Copy .env file
 copy .env.example .env
 ```
 
 Edit `.env` file with PostgreSQL configuration:
+
 ```env
 # Application
 APP_NAME=KalangkaServer
@@ -53,6 +57,7 @@ DB_PASSWORD=postgres  # Your PostgreSQL password
 ```
 
 ### Step 3: Install PHP Dependencies
+
 ```bash
 composer install
 ```
@@ -60,6 +65,7 @@ composer install
 ### Step 4: Create Database using pgAdmin
 
 **Via pgAdmin (GUI):**
+
 1. Open **pgAdmin** (search in Start Menu)
 2. Enter your master password (set during installation)
 3. Expand **Servers** > **PostgreSQL** (right-click, connect)
@@ -70,6 +76,7 @@ composer install
 8. Click **Save**
 
 **Via Command Line (Alternative):**
+
 ```bash
 # Open SQL Shell (psql) or CMD
 psql -U postgres
@@ -81,11 +88,13 @@ CREATE DATABASE kalangka_db;
 ```
 
 ### Step 5: Generate Application Key
+
 ```bash
 php artisan key:generate
 ```
 
 ### Step 6: Run Migrations
+
 ```bash
 # Create database tables
 php artisan migrate
@@ -94,9 +103,8 @@ php artisan migrate
 php artisan db:seed
 ```
 
-
-
 ### Step 7: Run the Application
+
 ```bash
 # Start Laravel development server
 php artisan serve
@@ -106,14 +114,11 @@ php artisan serve
 
 ## 🎯 Access Your Application
 
-| Service | URL | Credentials |
-|---------|-----|-------------|
-| **Laravel App** | http://127.0.0.1:8000 | - |
-| **pgAdmin** | http://localhost:5050 | Set during installation |
-| **PostgreSQL** | localhost:5432 | User: postgres, Pass: yourpassword |
-
-
-
+| Service         | URL                   | Credentials                        |
+| --------------- | --------------------- | ---------------------------------- |
+| **Laravel App** | http://127.0.0.1:8000 | -                                  |
+| **pgAdmin**     | http://localhost:5050 | Set during installation            |
+| **PostgreSQL**  | localhost:5432        | User: postgres, Pass: yourpassword |
 
 ## ✅ Post-Setup Checklist
 
@@ -126,10 +131,19 @@ php artisan serve
 - [ ] Can access http://localhost:8000
 - [ ] Try accessing an api http://localhost:8000/api/trees/ (Should fetch all the trees)
 
-
-**🎉 Your Kalangka Server is now running with PostgreSQL!** 
+**🎉 Your Kalangka Server is now running with PostgreSQL!**
 **Open pgAdmin to manage your database easily!** 🐘
 
-##### DISREGARD the items below,  backup ko lang to 
+##### DISREGARD the items below, backup ko lang to
+
 Gawa ng Procfile ito laman
 web: heroku-php-apache2 public/
+
+#### Access db
+
+docker exec -it laravel-mysql-2 mysql -u root -p
+pw: iancalicaroot
+
+#### access docker laravel container
+
+docker exec -it laravel-app-2 /bin/sh

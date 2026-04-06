@@ -1,6 +1,6 @@
 FROM php:8.2-fpm
 
-# Install dependencies (COMPLETE list with proper line continuation)
+# Install dependencies (REMOVED libpq-dev for PostgreSQL)
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -9,7 +9,6 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     zip \
     unzip \
-    libpq-dev \
     libzip-dev \
     libjpeg62-turbo-dev \
     libfreetype6-dev \
@@ -17,11 +16,10 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# I-configure at i-install ang PHP extensions
+# I-configure at i-install ang PHP extensions (REMOVED pdo_pgsql and pgsql, ADDED pdo_mysql)
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
     && docker-php-ext-install -j$(nproc) \
-    pdo_pgsql \
-    pgsql \
+    pdo_mysql \
     mbstring \
     exif \
     pcntl \

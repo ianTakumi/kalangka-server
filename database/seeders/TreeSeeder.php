@@ -14,7 +14,7 @@ class TreeSeeder extends Seeder
     public function run(): void
     {
         // Clear existing records
-        Tree::truncate();
+        // Tree::truncate();
 
         // HARDCODED UUIDs for 20 trees
         $trees = [

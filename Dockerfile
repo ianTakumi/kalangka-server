@@ -1,7 +1,7 @@
 # Use PHP 8.2 with Apache
 FROM php:8.2-apache
 
-# Install system dependencies
+# Install system dependencies (REMOVED libpq-dev)
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -10,12 +10,11 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     zip \
     unzip \
-    libpq-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Install PHP extensions
-RUN docker-php-ext-install pdo_mysql pdo_pgsql mbstring exif pcntl bcmath gd
+# Install PHP extensions (REMOVED pdo_pgsql)
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
