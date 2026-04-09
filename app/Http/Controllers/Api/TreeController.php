@@ -17,55 +17,18 @@ class TreeController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Tree::query();
-        
-        // Filter by type
-        if ($request->has('type')) {
-            $query->where('type', $request->type);
-        }
-        
-        // Filter by status
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
-        }
-        
-        // Nearby trees (simple bounding box for now)
-        if ($request->has(['latitude', 'longitude', 'radius'])) {
-            $lat = $request->latitude;
-            $lng = $request->longitude;
-            $radius = $request->radius; // in kilometers
-            
-            $query->whereBetween('latitude', [$lat - ($radius/111), $lat + ($radius/111)])
-                  ->whereBetween('longitude', [$lng - ($radius/111), $lng + ($radius/111)]);
-        }
-        
-        // Filter by sync status
-        if ($request->has('is_synced')) {
-            $query->where('is_synced', filter_var($request->is_synced, FILTER_VALIDATE_BOOLEAN));
-        }
-        
-        // Order by
         $orderBy = $request->get('order_by', 'created_at');
         $orderDir = $request->get('order_dir', 'desc');
-        $query->orderBy($orderBy, $orderDir);
         
-        // Pagination
-        $perPage = $request->get('per_page', 20);
-        $trees = $query->paginate($perPage);
+        $trees = Tree::orderBy($orderBy, $orderDir)->get();
         
-        // Return JSON without TreeResource
         return response()->json([
             'success' => true,
-            'data' => $trees->items(),
-            'meta' => [
-                'current_page' => $trees->currentPage(),
-                'per_page' => $trees->perPage(),
-                'total' => $trees->total(),
-                'last_page' => $trees->lastPage(),
-            ]
+            'data' => $trees,
+            'total' => $trees->count()
         ]);
     }
-
+    
     /**
      * Store a tree with ID from React Native
      */
