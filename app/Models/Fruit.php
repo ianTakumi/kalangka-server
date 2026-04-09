@@ -10,7 +10,7 @@ class Fruit extends Model
     public $incrementing = false;
     protected $keyType = 'string';
     
-    // Fillable fields
+    // Fillable fields - ALL fields that can be mass assigned
     protected $fillable = [
         'id',         
         'flower_id',   
@@ -19,16 +19,24 @@ class Fruit extends Model
         'quantity',   
         'tag_id',
         'bagged_at',  
-        'image_url',    
+        'image_url',
+        // Farmer assessment fields
+        'farmer_extra_days',
+        'farmer_assessed_at',
+        'next_check_date',
+        'farmer_notes',
     ];
     
-    // Casts
+    // Casts - ALL type casting in one array
     protected $casts = [
         'quantity' => 'integer',
+        'tag_id' => 'integer',
+        'farmer_extra_days' => 'integer',
         'bagged_at' => 'datetime',
+        'farmer_assessed_at' => 'datetime',
+        'next_check_date' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
-        'deleted_at' => 'datetime',
     ];
     
     /**

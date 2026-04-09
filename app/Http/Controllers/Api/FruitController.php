@@ -120,9 +120,9 @@ class FruitController extends Controller
                 'bagged_at' => 'sometimes|date',
                 'image_url' => 'sometimes|string',
                 // Farmer assessment fields (optional)
-                'farmer_extra_days' => 'sometimes|integer|min:0',
-                'farmer_assessed_at' => 'sometimes|date',
-                'next_check_date' => 'sometimes|date',
+                'farmer_extra_days' => 'sometimes|integer|min:0|nullable',
+                'farmer_assessed_at' => 'sometimes|date|nullable',
+                'next_check_date' => 'sometimes|date|nullable',
                 'farmer_notes' => 'sometimes|string|nullable',
             ]);
 
