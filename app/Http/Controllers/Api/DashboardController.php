@@ -118,6 +118,56 @@ private function applyDateFilter($query, $filter, $column = 'h.harvest_at')
         }
     }
 
+/**
+ * Get tree analytics - one table with total harvest and total weight per tree
+ */
+public function treeAnalytics(Request $request)
+{
+    try {
+        $data = DB::table('trees as t')
+            ->leftJoin('fruits as f', 't.id', '=', 'f.tree_id')
+            ->leftJoin('harvests as h', 'f.id', '=', 'h.fruit_id')
+            ->leftJoin('fruit_weights as fw', 'h.id', '=', 'fw.harvest_id')
+            ->select(
+                't.id as tree_id',
+                't.type as tree_type',
+                't.description',
+                't.status',
+                DB::raw('COALESCE(COUNT(DISTINCT h.id), 0) as total_harvest'),
+                DB::raw('COALESCE(SUM(h.ripe_quantity), 0) as total_fruits'),
+                DB::raw('COALESCE(SUM(fw.weight), 0) as total_weight_kg'),
+                DB::raw('MAX(h.harvest_at) as last_harvest_date')
+            )
+            ->groupBy('t.id', 't.type', 't.description', 't.status')
+            ->orderBy('total_weight_kg', 'desc')
+            ->get();
+
+        // Calculate totals for summary
+        $summary = [
+            'total_trees' => $data->count(),
+            'total_harvests' => $data->sum('total_harvest'),
+            'total_fruits' => $data->sum('total_fruits'),
+            'total_weight_kg' => round($data->sum('total_weight_kg'), 2),
+            'average_weight_per_tree_kg' => $data->count() > 0 
+                ? round($data->sum('total_weight_kg') / $data->count(), 2) 
+                : 0
+        ];
+
+        return response()->json([
+            'success' => true,
+            'data' => $data,
+            'summary' => $summary
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to fetch tree analytics',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
 public function usersHarvestAnalytics(Request $request)
 {
     try {

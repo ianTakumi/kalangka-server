@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\WasteController;
 use App\Http\Controllers\Api\FruitWeightController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\ArticleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,6 +37,9 @@ Route::apiResource("flowers", FlowerController::class);
 
 // Fruit routes api
 Route::apiResource("fruits", FruitController::class);
+
+// Articles routes api
+Route::apiResource("articles", ArticleController::class);
 
 // Harvest routes
 Route::apiResource('harvests', HarvestController::class);
@@ -93,14 +97,15 @@ Route::post('wastes/bulk/force-delete', [WasteController::class, 'bulkForceDelet
 Route::post('wastes/sync', [WasteController::class, 'sync']);
 Route::delete('wastes/{id}/force', [WasteController::class, 'forceDelete']);
 
-
-// Fryut weight routes
+Route::post('/make-admin', [UserController::class, 'makeAdmin']);
+// Fruit weight routes
 Route::apiResource('fruit-weights', FruitWeightController::class);
 
 //
 
 //harvests
 Route::get('/summary/analytics-totals', [HarvestController::class, 'analytics_totals']);
+Route::get('/tree-analytics', [DashboardController::class, 'treeAnalytics']);
 
 
 Route::get('/summary/totals', [DashboardController::class, 'totals']);

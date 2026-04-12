@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('trees', function (Blueprint $table) {
             // ID comes from React Native as string/UUID
-            $table->string('id')->primary(); // Not auto-incrementing
+            $table->string('id')->primary(); 
             
             $table->text('description');
             $table->double('latitude', 10, 8);
