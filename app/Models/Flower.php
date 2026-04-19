@@ -24,7 +24,7 @@ class Flower extends Model
     
     // Casts
     protected $casts = [
-        'wrapped_at' => 'datetime',
+        'wrapped_at' => 'datetime:Y-m-d H:i:s',
         'quantity' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

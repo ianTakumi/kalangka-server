@@ -32,7 +32,7 @@ class Fruit extends Model
         'quantity' => 'integer',
         'tag_id' => 'integer',
         'farmer_extra_days' => 'integer',
-        'bagged_at' => 'datetime',
+       'bagged_at' => 'datetime:Y-m-d H:i:s',
         'farmer_assessed_at' => 'datetime',
         'next_check_date' => 'datetime',
         'created_at' => 'datetime',

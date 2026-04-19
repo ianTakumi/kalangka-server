@@ -32,25 +32,64 @@ class TreeController extends Controller
     /**
      * Store a tree with ID from React Native
      */
-    public function store(StoreTreeRequest $request)
-    {
-        try {
-            $tree = Tree::create($request->validated());
-            
+   public function store(Request $request)
+{
+    try {
+        $ids = $request->ids; // Array of IDs
+        $type = $request->type; // Same type for all
+        
+        if (!$ids || !is_array($ids)) {
+            // Single tree mode (backward compatible)
+            $ids = [$request->id];
+            $type = $request->type;
+        }
+        
+        $createdTrees = [];
+        
+        // Get the last tree to determine the starting J number
+        $lastTree = Tree::orderBy('created_at', 'desc')->first();
+        
+        if ($lastTree && preg_match('/J(\d+)/', $lastTree->description, $matches)) {
+            $startNumber = (int) $matches[1] + 1;
+        } else {
+            $startNumber = 1;
+        }
+        
+        // Create multiple trees
+        foreach ($ids as $index => $id) {
+            $tree = Tree::create([
+                'id' => $id,
+                'description' => 'J' . ($startNumber + $index),
+                'type' => $type,
+                'status' => 'active',
+                'is_synced' => true,
+            ]);
+            $createdTrees[] = $tree;
+        }
+        
+        // If only 1 tree, return single object for backward compatibility
+        if (count($createdTrees) === 1) {
             return response()->json([
                 'success' => true,
-                'message' => 'Tree saved successfully',
-                'data' => $tree // Direct model instead of TreeResource
+                'message' => 'Tree created successfully',
+                'data' => $createdTrees[0]
             ], 201);
-            
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to save tree',
-                'error' => $e->getMessage()
-            ], 500);
         }
+        
+        return response()->json([
+            'success' => true,
+            'message' => count($createdTrees) . ' trees created successfully',
+            'data' => $createdTrees
+        ], 201);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to create trees',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
 
     /**
      * Display a specific tree

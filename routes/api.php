@@ -39,7 +39,7 @@ Route::apiResource("flowers", FlowerController::class);
 Route::apiResource("fruits", FruitController::class);
 
 // Articles routes api
-Route::apiResource("articles", ArticleController::class);
+// Route::apiResource("articles", ArticleController::class);
 
 // Harvest routes
 Route::apiResource('harvests', HarvestController::class);

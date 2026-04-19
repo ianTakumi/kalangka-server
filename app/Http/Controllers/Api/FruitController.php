@@ -39,7 +39,7 @@ class FruitController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'id' => 'required|string|unique:fruits,id',
-                'flower_id' => 'required|string|exists:flowers,id',
+                'flower_id' => 'nullable|string|exists:flowers,id', 
                 'tree_id' => 'required|string|exists:trees,id',
                 'user_id' => 'required|string|exists:users,id',
                 'quantity' => 'required|integer|min:1',
@@ -112,7 +112,7 @@ class FruitController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'flower_id' => 'sometimes|string|exists:flowers,id',
+                'flower_id' => 'nullable|string|exists:flowers,id',
                 'tree_id' => 'sometimes|string|exists:trees,id',
                 'user_id' => 'sometimes|string|exists:users,id',
                 'quantity' => 'sometimes|integer|min:1',
