@@ -101,12 +101,11 @@ Route::post('/make-admin', [UserController::class, 'makeAdmin']);
 // Fruit weight routes
 Route::apiResource('fruit-weights', FruitWeightController::class);
 
-//
 
 //harvests
 Route::get('/summary/analytics-totals', [HarvestController::class, 'analytics_totals']);
 Route::get('/tree-analytics', [DashboardController::class, 'treeAnalytics']);
-
+Route::get('fruit-assignment-stats', [DashboardController::class, 'fruitAssignmentStats']);
 
 Route::get('/summary/totals', [DashboardController::class, 'totals']);
 Route::get('/tree/top', [DashboardController::class, 'topYieldingTrees']); 

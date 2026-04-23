@@ -93,7 +93,44 @@ class DashboardController extends Controller
         }
     }
 
-private function applyDateFilter($query, $filter, $column = 'h.harvest_at')
+    /**
+     * Get fruit assignment percentages for doughnut chart
+     * Returns percentage of assigned vs unassigned fruits
+     */
+    public function fruitAssignmentStats(Request $request)
+    {
+        try {
+            // Total fruits count
+            $totalFruits = Fruit::count();
+            
+            // Assigned fruits (fruits that have at least one harvest record)
+            $assignedFruits = DB::table('fruits as f')
+                ->join('harvests as h', 'f.id', '=', 'h.fruit_id')
+                ->distinct('f.id')
+                ->count('f.id');
+            
+            // Unassigned fruits (fruits with no harvest record)
+            $unassignedFruits = $totalFruits - $assignedFruits;
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'total' => $totalFruits,
+                    'assigned' => $assignedFruits,
+                    'unassigned' => $unassignedFruits
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to fetch fruit assignment statistics',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    private function applyDateFilter($query, $filter, $column = 'h.harvest_at')
     {
         if (!$filter) return $query;
 
