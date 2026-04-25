@@ -17,7 +17,15 @@ class TreeController extends Controller
      */
     public function index(Request $request)
     {
-        $trees = Tree::orderByRaw("CAST(REGEXP_REPLACE(description, '[^0-9]', '') AS UNSIGNED) ASC")->get();
+        $driver = DB::connection()->getDriverName();
+        
+        if ($driver === 'pgsql') {
+            // PostgreSQL version
+            $trees = Tree::orderByRaw("CAST(REGEXP_REPLACE(description, '[^0-9]', '', 'g') AS INTEGER) ASC")->get();
+        } else {
+            // MySQL version (default)
+            $trees = Tree::orderByRaw("CAST(REGEXP_REPLACE(description, '[^0-9]', '') AS UNSIGNED) ASC")->get();
+        }
         
         return response()->json([
             'success' => true,
@@ -25,7 +33,6 @@ class TreeController extends Controller
             'total' => $trees->count()
         ]);
     }
-    
     /**
      * Store a tree with ID from React Native
      */
