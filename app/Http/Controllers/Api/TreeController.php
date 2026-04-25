@@ -17,10 +17,7 @@ class TreeController extends Controller
      */
     public function index(Request $request)
     {
-        $orderBy = $request->get('order_by', 'created_at');
-        $orderDir = $request->get('order_dir', 'desc');
-        
-        $trees = Tree::orderBy($orderBy, $orderDir)->get();
+        $trees = Tree::orderByRaw("CAST(REGEXP_REPLACE(description, '[^0-9]', '') AS UNSIGNED) ASC")->get();
         
         return response()->json([
             'success' => true,

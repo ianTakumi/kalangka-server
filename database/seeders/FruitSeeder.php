@@ -36,6 +36,26 @@ class FruitSeeder extends Seeder
         // Fruit image URL
         $imageUrl = 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/fruits/samplefruit.jpg';
         
+        // Helper function to get random date from January 2026 to current month
+        $getRandomDate = function() {
+            $startDate = Carbon::create(2026, 1, 1); // January 1, 2026
+            $endDate = Carbon::now(); // Current date
+            
+            // If start date is in the future (should not happen), use current date minus 30 days
+            if ($startDate->gt($endDate)) {
+                $startDate = Carbon::now()->subMonths(6);
+            }
+            
+            // Get random timestamp between start and end date
+            $randomTimestamp = rand($startDate->timestamp, $endDate->timestamp);
+            $randomDate = Carbon::createFromTimestamp($randomTimestamp);
+            
+            // Set random time within the day
+            $randomDate->setTime(rand(0, 23), rand(0, 59), rand(0, 59));
+            
+            return $randomDate;
+        };
+        
         $totalFruits = 0;
         $totalFlowerQuantity = 0;
         $totalFruitQuantity = 0;
@@ -43,31 +63,21 @@ class FruitSeeder extends Seeder
         // Track fruits per user
         $userFruitCount = [];
         $userFruitQuantity = [];
+        $userFruitDates = []; // Track dates per user for summary
         
-        // Age categories distribution
-        $ageCategories = [
-            'approaching' => ['min' => 115, 'max' => 119, 'count' => 0, 'total' => 0],
-            'ready' => ['min' => 120, 'max' => 124, 'count' => 0, 'total' => 0],
-            'overdue' => ['min' => 125, 'max' => 130, 'count' => 0, 'total' => 0],
-        ];
-
-        $this->command->info('');
-        $this->command->info('📅 Creating fruits with different ages:');
-        $this->command->info('   🌱 Approaching: 115-119 days ago');
-        $this->command->info('   ✅ Ready: 120-124 days ago');
-        $this->command->info('   ⚠️  Overdue: 125-130 days ago');
-        $this->command->info('');
-
         // Get all non-admin users from flowers and initialize tracking
         $users = $flowers->pluck('user')->unique('id')->filter(function ($user) {
             return $user && $user->role !== 'admin';
         });
         
         $this->command->info('👥 Non-admin users with flowers: ' . $users->count());
+        $this->command->info('📅 Date range: January 2026 to ' . Carbon::now()->format('F Y'));
+        $this->command->info('');
         
         foreach ($users as $user) {
             $userFruitCount[$user->id] = 0;
             $userFruitQuantity[$user->id] = 0;
+            $userFruitDates[$user->id] = [];
         }
 
         // Count admin users that were excluded
@@ -83,7 +93,6 @@ class FruitSeeder extends Seeder
         $fruitIds = $this->generateFruitIds($flowers->count() * 2);
         
         $fruitIndex = 0;
-        $fruitNumber = 0;
         
         // Start with tag_id = 1
         $currentTagId = 1;
@@ -115,28 +124,9 @@ class FruitSeeder extends Seeder
             
             // Create exactly 2 fruits per flower
             for ($i = 1; $i <= 2; $i++) {
-                $fruitNumber++;
-                
-                // Determine age category based on fruit number (cycle through categories)
-                $categoryIndex = ($fruitNumber % 3);
-                $category = '';
-                
-                if ($categoryIndex == 0) {
-                    $category = 'overdue';
-                } elseif ($categoryIndex == 1) {
-                    $category = 'ready';
-                } else {
-                    $category = 'approaching';
-                }
-                
-                // Get random days based on category
-                $daysAgo = rand($ageCategories[$category]['min'], $ageCategories[$category]['max']);
-                $fruitCreatedAt = Carbon::now()->subDays($daysAgo);
+                // Get random date from January 2026 to current
+                $fruitCreatedAt = $getRandomDate();
                 $baggedAt = clone $fruitCreatedAt;
-                
-                // Update category count
-                $ageCategories[$category]['count']++;
-                $ageCategories[$category]['total'] += $daysAgo;
                 
                 // Calculate fruit quantity based on remaining capacity
                 $remainingCapacity = $maxFruitPerFlower - $flowerFruitTotal;
@@ -180,20 +170,20 @@ class FruitSeeder extends Seeder
                     // Update user tracking
                     $userFruitCount[$flower->user_id]++;
                     $userFruitQuantity[$flower->user_id] += $fruitQuantity;
+                    $userFruitDates[$flower->user_id][] = $fruitCreatedAt->format('Y-m-d');
                     
-                    $statusIcon = $category === 'approaching' ? '🌱' : ($category === 'ready' ? '✅' : '⚠️');
-                    $this->command->info("   {$statusIcon} Fruit {$i}: {$fruitQuantity} fruits (Running total: {$flowerFruitTotal}/{$maxFruitPerFlower})");
-                    $this->command->info("      📅 Created: {$fruitCreatedAt->format('Y-m-d H:i:s')} ({$daysAgo} days ago) - {$category}");
+                    $this->command->info("   🍎 Fruit {$i}: {$fruitQuantity} fruits (Running total: {$flowerFruitTotal}/{$maxFruitPerFlower})");
+                    $this->command->info("      📅 Date: {$fruitCreatedAt->format('F j, Y')} ({$fruitCreatedAt->diffForHumans()})");
                     $this->command->info("      🏷️  Batch # (tag_id): {$tagId}");
                     $this->command->info("      👤 Assigned to user: {$userName}");
-                    
-                    // Increment tag_id and reset to 1 if exceeds 4
-                    $currentTagId++;
-                    if ($currentTagId > 4) {
-                        $currentTagId = 1;
-                    }
                 } else {
                     $this->command->info("   ⚠️  Fruit {$i}: No fruits (max capacity reached: {$flowerFruitTotal}/{$maxFruitPerFlower})");
+                }
+                
+                // Increment tag_id and reset to 1 if exceeds 4
+                $currentTagId++;
+                if ($currentTagId > 4) {
+                    $currentTagId = 1;
                 }
             }
             
@@ -232,19 +222,8 @@ class FruitSeeder extends Seeder
                     
                     // Create 2 fruits for this user to ensure they have records
                     for ($j = 1; $j <= 2; $j++) {
-                        $daysAgo = rand(115, 130);
-                        $fruitCreatedAt = Carbon::now()->subDays($daysAgo);
+                        $fruitCreatedAt = $getRandomDate();
                         $baggedAt = clone $fruitCreatedAt;
-                        
-                        // Determine category for age
-                        if ($daysAgo >= 125) {
-                            $category = 'overdue';
-                        } elseif ($daysAgo >= 120) {
-                            $category = 'ready';
-                        } else {
-                            $category = 'approaching';
-                        }
-                        
                         $fruitQuantity = rand(1, 3);
                         
                         // Assign current tag_id (cycles 1-4)
@@ -267,10 +246,10 @@ class FruitSeeder extends Seeder
                         $totalFruitQuantity += $fruitQuantity;
                         $userFruitCount[$user->id]++;
                         $userFruitQuantity[$user->id] += $fruitQuantity;
+                        $userFruitDates[$user->id][] = $fruitCreatedAt->format('Y-m-d');
                         
-                        $statusIcon = $category === 'approaching' ? '🌱' : ($category === 'ready' ? '✅' : '⚠️');
-                        $this->command->info("   {$statusIcon} Fruit {$j}: {$fruitQuantity} fruits");
-                        $this->command->info("      📅 Created: {$fruitCreatedAt->format('Y-m-d H:i:s')} ({$daysAgo} days ago) - {$category}");
+                        $this->command->info("   🍎 Fruit {$j}: {$fruitQuantity} fruits");
+                        $this->command->info("      📅 Date: {$fruitCreatedAt->format('F j, Y')} ({$fruitCreatedAt->diffForHumans()})");
                         $this->command->info("      🏷️  Batch # (tag_id): {$tagId}");
                         
                         // Increment tag_id and reset to 1 if exceeds 4
@@ -294,9 +273,15 @@ class FruitSeeder extends Seeder
             $fruitCount = $userFruitCount[$user->id] ?? 0;
             $fruitQty = $userFruitQuantity[$user->id] ?? 0;
             $status = $fruitCount > 0 ? '✅' : '⚠️';
+            $dateRange = !empty($userFruitDates[$user->id]) 
+                ? ' (' . min($userFruitDates[$user->id]) . ' to ' . max($userFruitDates[$user->id]) . ')' 
+                : '';
             $this->command->info("   {$status} {$user->first_name} {$user->last_name} ({$user->email}):");
             $this->command->info("      📦 Fruit records: {$fruitCount}");
             $this->command->info("      🍎 Total fruits: {$fruitQty}");
+            if ($dateRange) {
+                $this->command->info("      📅 Date range:{$dateRange}");
+            }
         }
 
         // Count how many fruits per tag_id
@@ -304,6 +289,10 @@ class FruitSeeder extends Seeder
         for ($i = 1; $i <= 4; $i++) {
             $tagIdCounts[$i] = Fruit::where('tag_id', $i)->count();
         }
+
+        // Get overall date range statistics
+        $oldestFruit = Fruit::orderBy('created_at', 'asc')->first();
+        $newestFruit = Fruit::orderBy('created_at', 'desc')->first();
 
         $this->command->info('');
         $this->command->info('====================================');
@@ -316,18 +305,22 @@ class FruitSeeder extends Seeder
         $this->command->info('👥 Non-admin users with fruit records: ' . count(array_filter($userFruitCount, function($count) { return $count > 0; })) . '/' . $users->count());
         $this->command->info('📈 Utilization rate: ' . round(($totalFruitQuantity / max($totalFlowerQuantity, 1)) * 100, 2) . '%');
         $this->command->info('');
-        $this->command->info('📅 AGE DISTRIBUTION:');
-        $this->command->info('   🌱 Approaching (115-119 days): ' . $ageCategories['approaching']['count'] . ' fruits');
-        $this->command->info('   ✅ Ready (120-124 days): ' . $ageCategories['ready']['count'] . ' fruits');
-        $this->command->info('   ⚠️  Overdue (125-130 days): ' . $ageCategories['overdue']['count'] . ' fruits');
+        $this->command->info('📅 DATE RANGE STATISTICS:');
+        if ($oldestFruit && $newestFruit) {
+            $this->command->info("   🍎 Oldest fruit date: " . $oldestFruit->created_at->format('F j, Y'));
+            $this->command->info("   🍎 Newest fruit date: " . $newestFruit->created_at->format('F j, Y'));
+            $this->command->info("   📊 Timespan: " . $oldestFruit->created_at->diffForHumans($newestFruit->created_at, true));
+        }
         $this->command->info('');
         $this->command->info('🏷️  BATCH DISTRIBUTION (tag_id 1-4):');
         foreach ($tagIdCounts as $tagId => $count) {
-            $this->command->info("   • Batch {$tagId}: {$count} fruit records");
+            $percentage = $totalFruits > 0 ? round(($count / $totalFruits) * 100, 2) : 0;
+            $this->command->info("   • Batch {$tagId}: {$count} fruit records ({$percentage}%)");
         }
         $this->command->info('====================================');
         $this->command->info('🚫 Admin users are excluded from fruit records');
         $this->command->info('🖼️  Fruit Image: ' . $imageUrl);
+        $this->command->info('📅 All dates are randomized from January 2026 to ' . Carbon::now()->format('F Y'));
         $this->command->info('====================================');
     }
     

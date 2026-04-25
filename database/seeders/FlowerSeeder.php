@@ -120,6 +120,25 @@ class FlowerSeeder extends Seeder
             '0f1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c',
         ];
 
+        // Helper function to get random date from January to current month
+        $getRandomDate = function() {
+            $startDate = Carbon::create(Carbon::now()->year, 1, 1); // January 1 of current year
+            $endDate = Carbon::now(); // Current date
+            
+            if ($startDate->gt($endDate)) {
+                // If we're in January, use last year's January
+                $startDate = Carbon::create(Carbon::now()->subYear()->year, 1, 1);
+            }
+            
+            $randomTimestamp = rand($startDate->timestamp, $endDate->timestamp);
+            $randomDate = Carbon::createFromTimestamp($randomTimestamp);
+            
+            // Set random time within the day
+            $randomDate->setTime(rand(0, 23), rand(0, 59), rand(0, 59));
+            
+            return $randomDate;
+        };
+
         $flowerIndex = 0;
         $userIds = $users->pluck('id')->toArray();
         $userCount = count($userIds);
@@ -132,8 +151,8 @@ class FlowerSeeder extends Seeder
             // Get a tree for this user (cycle through trees)
             $tree = $trees[$userIndex % $trees->count()];
             
-            // Random date within the last 30 days
-            $randomDate = Carbon::now()->subDays(rand(0, 30))->subHours(rand(0, 23));
+            // Random date from January to current month
+            $randomDate = $getRandomDate();
             
             Flower::create([
                 'id' => $flowerIds[$flowerIndex++],
@@ -172,8 +191,8 @@ class FlowerSeeder extends Seeder
                     // Randomly assign a non-admin user (cycle through users)
                     $randomUser = $users[$flowerIndex % $userCount];
                     
-                    // Random date within the last 30 days
-                    $randomDate = Carbon::now()->subDays(rand(0, 30))->subHours(rand(0, 23));
+                    // Random date from January to current month
+                    $randomDate = $getRandomDate();
                     
                     Flower::create([
                         'id' => $flowerIds[$flowerIndex++],
@@ -200,6 +219,18 @@ class FlowerSeeder extends Seeder
         foreach ($users as $user) {
             $flowerCount = Flower::where('user_id', $user->id)->count();
             $this->command->info("   👤 {$user->first_name} {$user->last_name} (Role: {$user->role}): {$flowerCount} flower(s)");
+        }
+        
+        // Display date range statistics
+        $this->command->info('====================================');
+        $this->command->info('📅 Date Range Statistics:');
+        
+        $oldestFlower = Flower::orderBy('wrapped_at', 'asc')->first();
+        $newestFlower = Flower::orderBy('wrapped_at', 'desc')->first();
+        
+        if ($oldestFlower && $newestFlower) {
+            $this->command->info("   📅 Oldest flower date: " . $oldestFlower->wrapped_at->format('F j, Y'));
+            $this->command->info("   📅 Newest flower date: " . $newestFlower->wrapped_at->format('F j, Y'));
         }
         
         $this->command->info('====================================');

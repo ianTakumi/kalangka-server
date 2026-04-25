@@ -4,175 +4,99 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Tree;
-use Illuminate\Support\Str;
 
 class TreeSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Clear existing records
-        // Tree::truncate();
-
-        // HARDCODED UUIDs for 20 trees
         $trees = [
-            // East Langka (5 trees)
-            [
-                'id' => 'b5d0c261-7b87-45bc-ac25-9296546bbd76',
-                'description' => 'East Langka #1',
-                'latitude' => 14.505557176823386,
-                'longitude' => 121.04352916677426,
-            ],
-            [
-                'id' => '10529670-463f-436d-a664-d4e09202acbe',
-                'description' => 'East Langka #2',
-                'latitude' => 14.505521464492494,
-                'longitude' => 121.04342465020623,
-            ],
-            [
-                'id' => '018e39a3-3b74-4609-941c-48780d96f87c',
-                'description' => 'East Langka #3',
-                'latitude' => 14.505775418720406,
-                'longitude' => 121.04391239419031,
-            ],
-            [
-                'id' => 'db9225a2-1c3d-4cf7-b7c0-3b8c17cab26b',
-                'description' => 'East Langka #4',
-                'latitude' => 14.50584089124758,
-                'longitude' => 121.04405994699222,
-            ],
-            [
-                'id' => '97d83628-34f8-4829-a222-716ee34fa2af',
-                'description' => 'East Langka #5',
-                'latitude' => 14.505858747387995,
-                'longitude' => 121.04418290766047,
-            ],
-
-            // North Langka (5 trees)
-            [
-                'id' => '7f13f5f3-9945-4072-b5e0-db73f47a2401',
-                'description' => 'North Langka #1',
-                'latitude' => 14.506523391590266,
-                'longitude' => 121.04412552601528,
-            ],
-            [
-                'id' => 'b125ad94-7c64-4242-b708-29b63eec2328',
-                'description' => 'North Langka #2',
-                'latitude' => 14.506636480106694,
-                'longitude' => 121.0442218452054,
-            ],
-            [
-                'id' => 'c6285e3e-c2ce-4a02-a4ef-385331b94b35',
-                'description' => 'North Langka #3',
-                'latitude' => 14.506705920395184,
-                'longitude' => 121.04435915128495,
-            ],
-            [
-                'id' => '783ac30b-eb62-4c6b-b8b4-716bac392b87',
-                'description' => 'North Langka #4',
-                'latitude' => 14.506793216726958,
-                'longitude' => 121.04459072721016,
-            ],
-            [
-                'id' => '5890576d-2e6e-4128-8c70-e6187decf2da',
-                'description' => 'North Langka #5',
-                'latitude' => 14.506819008818386,
-                'longitude' => 121.04465425688875,
-            ],
-
-            // South Langka (5 trees)
-            [
-                'id' => '26a7eda6-4d44-4974-a28a-c3796d192864',
-                'description' => 'South Langka #1',
-                'latitude' => 14.50484931004892,
-                'longitude' => 121.04342411071563,
-            ],
-            [
-                'id' => '6e881fbb-f458-4e6b-b2f9-e8cd82adf1de',
-                'description' => 'South Langka #2',
-                'latitude' => 14.504577558719715,
-                'longitude' => 121.0435606665031,
-            ],
-            [
-                'id' => 'b3e49e38-d126-46ed-91a4-7ce022abcc8c',
-                'description' => 'South Langka #3',
-                'latitude' => 14.504445355249812,
-                'longitude' => 121.04358342580102,
-            ],
-            [
-                'id' => 'ef179d7d-f78b-45d2-8384-955181bb1256',
-                'description' => 'South Langka #4',
-                'latitude' => 14.50429479009073,
-                'longitude' => 121.04366687656002,
-            ],
-            [
-                'id' => '0fef3a1b-f310-47b6-b174-7ca8df44567c',
-                'description' => 'South Langka #5',
-                'latitude' => 14.504114846229776,
-                'longitude' => 121.04376550018429,
-            ],
-
-            // West Langka (5 trees)
-            [
-                'id' => '044f2a78-306b-499d-b2c3-4bf8797f82e5',
-                'description' => 'West Langka #1',
-                'latitude' => 14.506689131273959,
-                'longitude' => 121.04556348473848,
-            ],
-            [
-                'id' => 'aac2fba8-e4f0-4ac0-809d-b0c9efcf16bd',
-                'description' => 'West Langka #2',
-                'latitude' => 14.506755232349041,
-                'longitude' => 121.04559003725271,
-            ],
-            [
-                'id' => '7ccbd87e-e8f7-40e5-956d-a38d9519cccc',
-                'description' => 'West Langka #3',
-                'latitude' => 14.506839694805155,
-                'longitude' => 121.04585935561133,
-            ],
-            [
-                'id' => 'b3e1bc6b-45ea-42f0-bc06-2e87ee58136a',
-                'description' => 'West Langka #4',
-                'latitude' => 14.506883762160774,
-                'longitude' => 121.04590866742346,
-            ],
-            [
-                'id' => 'd898b41d-14e3-4566-aa51-bb855604f8c4',
-                'description' => 'West Langka #5',
-                'latitude' => 14.506979241401202,
-                'longitude' => 121.0461590197005,
-            ],
+            // Original J numbers (no duplicates)
+            ['id' => '4592d34c-1123-45f4-a28e-65a1f88097b5', 'description' => 'J1', 'latitude' => 10.7032977, 'longitude' => 124.803214, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_4592d34c-1123-45f4-a28e-65a1f88097b5_1775799532118.jpg', 'created_at' => '2026-04-10 13:39:00', 'updated_at' => '2026-04-10 13:39:00'],
+            ['id' => 'bc0be591-878b-45ce-9d22-3b725275dde8', 'description' => 'J2', 'latitude' => 10.7027429, 'longitude' => 124.8028978, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_bc0be591-878b-45ce-9d22-3b725275dde8_1775799715176.jpg', 'created_at' => '2026-04-10 13:42:02', 'updated_at' => '2026-04-10 13:42:02'],
+            ['id' => 'e5c713dc-39b5-4104-99ab-30157d71d0ec', 'description' => 'J3', 'latitude' => 10.702263, 'longitude' => 124.8029024, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_e5c713dc-39b5-4104-99ab-30157d71d0ec_1775801327748.jpg', 'created_at' => '2026-04-10 14:08:56', 'updated_at' => '2026-04-10 14:08:56'],
+            ['id' => '92b6ae26-ff22-4e3f-b8e5-4960cb3ae98d', 'description' => 'J4', 'latitude' => 10.7032667, 'longitude' => 124.8035223, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_92b6ae26-ff22-4e3f-b8e5-4960cb3ae98d_1775800042920.jpg', 'created_at' => '2026-04-10 13:47:33', 'updated_at' => '2026-04-10 13:47:33'],
+            ['id' => '950ac4e2-1d53-40b8-9982-0fe0e6156133', 'description' => 'J5', 'latitude' => 10.7033774, 'longitude' => 124.8033735, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_950ac4e2-1d53-40b8-9982-0fe0e6156133_1775800150821.jpg', 'created_at' => '2026-04-10 13:49:17', 'updated_at' => '2026-04-10 13:49:17'],
+            ['id' => '724cf75d-6d91-4d92-8b56-f96521de2ae8', 'description' => 'J6', 'latitude' => 10.7032284, 'longitude' => 124.8035681, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_724cf75d-6d91-4d92-8b56-f96521de2ae8_1775800301524.jpg', 'created_at' => '2026-04-10 13:51:47', 'updated_at' => '2026-04-10 13:51:47'],
+            ['id' => '57a9e637-2bf7-4c20-8c7a-7730936ac603', 'description' => 'J7', 'latitude' => 10.703497, 'longitude' => 124.8037514, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_57a9e637-2bf7-4c20-8c7a-7730936ac603_1775801330206.jpg', 'created_at' => '2026-04-10 14:08:56', 'updated_at' => '2026-04-10 14:08:56'],
+            ['id' => 'a5ca926c-607e-472c-9c1e-619a61d88878', 'description' => 'J8', 'latitude' => 10.7034943, 'longitude' => 124.8037312, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_a5ca926c-607e-472c-9c1e-619a61d88878_1775801332074.jpg', 'created_at' => '2026-04-10 14:08:58', 'updated_at' => '2026-04-10 14:08:58'],
+            ['id' => '796df468-d1d6-4ce5-8fd0-933e08a7efec', 'description' => 'J9', 'latitude' => 10.703442, 'longitude' => 124.8035806, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_796df468-d1d6-4ce5-8fd0-933e08a7efec_1775801334683.jpg', 'created_at' => '2026-04-10 14:08:59', 'updated_at' => '2026-04-10 14:08:59'],
+            ['id' => '56e06098-01e9-4675-a041-1d4ab4aca043', 'description' => 'J10', 'latitude' => 10.7028118, 'longitude' => 124.8034494, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_56e06098-01e9-4675-a041-1d4ab4aca043_1775802029671.jpg', 'created_at' => '2026-04-10 14:20:40', 'updated_at' => '2026-04-10 14:20:40'],
+            ['id' => '4c94521e-ea24-473e-9222-6c8211aae76d', 'description' => 'J11', 'latitude' => 10.7027745, 'longitude' => 124.8034546, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_4c94521e-ea24-473e-9222-6c8211aae76d_1775802055890.jpg', 'created_at' => '2026-04-10 14:21:01', 'updated_at' => '2026-04-10 14:21:01'],
+            ['id' => 'bad271cc-8d93-4273-a7f0-951e5a5ffb02', 'description' => 'J12', 'latitude' => 10.7024817, 'longitude' => 124.8030604, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_bad271cc-8d93-4273-a7f0-951e5a5ffb02_1775801983226.jpg', 'created_at' => '2026-04-10 14:19:52', 'updated_at' => '2026-04-10 14:19:52'],
+            ['id' => 'e924c216-00b5-4f41-9bd8-d14a0e20a353', 'description' => 'J13', 'latitude' => 10.703393, 'longitude' => 124.8034005, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_e924c216-00b5-4f41-9bd8-d14a0e20a353_1775801336547.jpg', 'created_at' => '2026-04-10 14:09:01', 'updated_at' => '2026-04-10 14:09:01'],
+            ['id' => '75c43ba4-5969-4776-8d37-88a0c2f81198', 'description' => 'J15', 'latitude' => 10.703177, 'longitude' => 124.8034001, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_75c43ba4-5969-4776-8d37-88a0c2f81198_1775802556636.jpg', 'created_at' => '2026-04-10 14:29:26', 'updated_at' => '2026-04-10 14:29:26'],
+            ['id' => '8042c2d8-e1b0-4736-84b7-66f7e109ddb8', 'description' => 'J16', 'latitude' => 10.7036311, 'longitude' => 124.8041115, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_8042c2d8-e1b0-4736-84b7-66f7e109ddb8_1775802494151.jpg', 'created_at' => '2026-04-10 14:28:23', 'updated_at' => '2026-04-10 14:28:23'],
+            ['id' => '79b1381f-b7d1-40a8-92d0-1be908b85b61', 'description' => 'J21', 'latitude' => 10.7034212, 'longitude' => 124.8034871, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_79b1381f-b7d1-40a8-92d0-1be908b85b61_1775801340691.jpg', 'created_at' => '2026-04-10 14:09:05', 'updated_at' => '2026-04-10 14:09:05'],
+            ['id' => '5fdaffa1-3ddd-49e2-8e68-15b909b42a47', 'description' => 'J22', 'latitude' => 10.7036317, 'longitude' => 124.8040257, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_5fdaffa1-3ddd-49e2-8e68-15b909b42a47_1775801338920.jpg', 'created_at' => '2026-04-10 14:09:04', 'updated_at' => '2026-04-10 14:09:04'],
+            ['id' => '933a4a4e-23eb-4a8e-be1d-4d08e0449402', 'description' => 'J23', 'latitude' => 10.703415, 'longitude' => 124.803615, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_933a4a4e-23eb-4a8e-be1d-4d08e0449402_1775801337337.jpg', 'created_at' => '2026-04-10 14:09:03', 'updated_at' => '2026-04-10 14:09:03'],
+            ['id' => '09adafaa-9585-41ac-83c4-3b4282e19e55', 'description' => 'J24', 'latitude' => 10.7024877, 'longitude' => 124.8030536, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_09adafaa-9585-41ac-83c4-3b4282e19e55_1775802317229.jpg', 'created_at' => '2026-04-10 14:25:25', 'updated_at' => '2026-04-10 14:25:25'],
+            ['id' => '12d1d639-d6c7-4c53-9e54-9715067f23d8', 'description' => 'J25', 'latitude' => 10.7035506, 'longitude' => 124.8038221, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_12d1d639-d6c7-4c53-9e54-9715067f23d8_1775802263711.jpg', 'created_at' => '2026-04-10 14:24:31', 'updated_at' => '2026-04-10 14:24:31'],
+            ['id' => '31ad8792-2fdd-461a-9e3b-1983d5428890', 'description' => 'J26', 'latitude' => 10.7030601, 'longitude' => 124.8033125, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_31ad8792-2fdd-461a-9e3b-1983d5428890_1775800535798.jpg', 'created_at' => '2026-04-10 13:55:44', 'updated_at' => '2026-04-10 13:55:44'],
+            ['id' => 'b8b65fa7-b3a4-44b8-8d09-7831e378063c', 'description' => 'J27', 'latitude' => 10.7029879, 'longitude' => 124.8033142, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_b8b65fa7-b3a4-44b8-8d09-7831e378063c_1775800630000.jpg', 'created_at' => '2026-04-10 13:57:17', 'updated_at' => '2026-04-10 13:57:17'],
+            ['id' => '402fd50a-6f27-44b2-b355-d34a8e84fb51', 'description' => 'J28', 'latitude' => 10.7028798, 'longitude' => 124.803297, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_402fd50a-6f27-44b2-b355-d34a8e84fb51_1775800684643.jpg', 'created_at' => '2026-04-10 13:58:14', 'updated_at' => '2026-04-10 13:58:14'],
+            ['id' => 'fd62a631-35ee-45fd-87b7-61ea1c61ffc1', 'description' => 'J30', 'latitude' => 10.7026397, 'longitude' => 124.8029232, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_fd62a631-35ee-45fd-87b7-61ea1c61ffc1_1775801881869.jpg', 'created_at' => '2026-04-10 14:18:08', 'updated_at' => '2026-04-10 14:18:08'],
+            ['id' => '7da77f02-f6c1-4371-a188-e730d01ee73b', 'description' => 'J31', 'latitude' => 10.7027411, 'longitude' => 124.8032159, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_7da77f02-f6c1-4371-a188-e730d01ee73b_1775801813677.jpg', 'created_at' => '2026-04-10 14:17:02', 'updated_at' => '2026-04-10 14:17:02'],
+            ['id' => '72973539-3464-4d56-aa49-c24444e4d71a', 'description' => 'J32', 'latitude' => 10.7027846, 'longitude' => 124.8032574, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_72973539-3464-4d56-aa49-c24444e4d71a_1775801628940.jpg', 'created_at' => '2026-04-10 14:13:57', 'updated_at' => '2026-04-10 14:13:57'],
+            ['id' => 'bcd4d6df-7f09-464d-abb1-89eb7035caa1', 'description' => 'J33', 'latitude' => 10.70282, 'longitude' => 124.8032538, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_bcd4d6df-7f09-464d-abb1-89eb7035caa1_1775801665009.jpg', 'created_at' => '2026-04-10 14:14:34', 'updated_at' => '2026-04-10 14:14:34'],
+            ['id' => '68e9371b-c0db-4773-b86c-87f35b32dade', 'description' => 'J34', 'latitude' => 10.7029115, 'longitude' => 124.8032183, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_68e9371b-c0db-4773-b86c-87f35b32dade_1775801707385.jpg', 'created_at' => '2026-04-10 14:15:14', 'updated_at' => '2026-04-10 14:15:14'],
+            ['id' => '1b5f9a66-11a9-44f4-ab72-46a7d450c1a3', 'description' => 'J39', 'latitude' => 10.7034518, 'longitude' => 124.8032189, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_1b5f9a66-11a9-44f4-ab72-46a7d450c1a3_1775800853424.jpg', 'created_at' => '2026-04-10 14:01:02', 'updated_at' => '2026-04-10 14:01:02'],
+            ['id' => '273b8043-9d6f-42da-b8f7-791810edefd4', 'description' => 'J40', 'latitude' => 10.7033786, 'longitude' => 124.8033782, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_273b8043-9d6f-42da-b8f7-791810edefd4_1775800916394.jpg', 'created_at' => '2026-04-10 14:02:04', 'updated_at' => '2026-04-10 14:02:04'],
+            ['id' => 'cb805f98-a246-4947-bfcc-dc2571953667', 'description' => 'J41', 'latitude' => 10.7034102, 'longitude' => 124.8034353, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_cb805f98-a246-4947-bfcc-dc2571953667_1775801093659.jpg', 'created_at' => '2026-04-10 14:05:03', 'updated_at' => '2026-04-10 14:05:03'],
+            ['id' => '4f893b6f-5550-4279-bf01-7c0532cc5083', 'description' => 'J42', 'latitude' => 10.7033201, 'longitude' => 124.8031844, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_4f893b6f-5550-4279-bf01-7c0532cc5083_1775800993130.jpg', 'created_at' => '2026-04-10 14:03:22', 'updated_at' => '2026-04-10 14:03:22'],
+            ['id' => '0b7ecdc8-bbdd-4605-b7a8-071529855f60', 'description' => 'J43', 'latitude' => 10.7034102, 'longitude' => 124.8034353, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_0b7ecdc8-bbdd-4605-b7a8-071529855f60_1775801162318.jpg', 'created_at' => '2026-04-10 14:06:10', 'updated_at' => '2026-04-10 14:06:10'],
+            ['id' => 'e2df941a-0d0e-44a5-adce-3321d5873f5e', 'description' => 'J45', 'latitude' => 10.7031498, 'longitude' => 124.8031926, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_e2df941a-0d0e-44a5-adce-3321d5873f5e_1775801349066.jpg', 'created_at' => '2026-04-10 14:08:39', 'updated_at' => '2026-04-10 14:09:21'],
+            ['id' => 'e551f9a7-0bff-4b57-a8a1-667c0443bc23', 'description' => 'J46', 'latitude' => 10.7023899, 'longitude' => 124.8031117, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_e551f9a7-0bff-4b57-a8a1-667c0443bc23_1775801399829.jpg', 'created_at' => '2026-04-10 14:10:07', 'updated_at' => '2026-04-10 14:10:07'],
+            ['id' => '194569cc-fdd9-43f8-aed7-d19eab561900', 'description' => 'J47', 'latitude' => 10.7033402, 'longitude' => 124.8033396, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_194569cc-fdd9-43f8-aed7-d19eab561900_1775801505451.jpg', 'created_at' => '2026-04-10 14:11:54', 'updated_at' => '2026-04-10 14:11:54'],
+            ['id' => '53e36cec-80a2-4a28-abf2-0ec64cf00929', 'description' => 'J48', 'latitude' => 10.7024028, 'longitude' => 124.8031084, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_53e36cec-80a2-4a28-abf2-0ec64cf00929_1775801564987.jpg', 'created_at' => '2026-04-10 14:12:54', 'updated_at' => '2026-04-10 14:12:54'],
+            ['id' => '01a378a1-772c-4d90-a32f-17e278d9409c', 'description' => 'J49', 'latitude' => 10.7024692, 'longitude' => 124.8030601, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_01a378a1-772c-4d90-a32f-17e278d9409c_1775801849066.jpg', 'created_at' => '2026-04-10 14:17:35', 'updated_at' => '2026-04-10 14:17:35'],
+            // J57 from "Tree 57"
+            ['id' => 'b81bbb9c-55b1-4d1e-b54c-caf37fd7ab76', 'description' => 'J57', 'latitude' => 10.702263, 'longitude' => 124.8029024, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_b81bbb9c-55b1-4d1e-b54c-caf37fd7ab76_1775803265977.jpg', 'created_at' => '2026-04-10 14:41:11', 'updated_at' => '2026-04-10 14:41:11'],
+            // Original J numbers continued
+            ['id' => '78a60987-ca5f-4e4a-ac49-979454efaf1b', 'description' => 'J90', 'latitude' => 10.7023413, 'longitude' => 124.8022075, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_78a60987-ca5f-4e4a-ac49-979454efaf1b_1775802773815.jpg', 'created_at' => '2026-04-10 14:33:10', 'updated_at' => '2026-04-10 14:33:10'],
+            ['id' => '613616fa-7f20-45dd-beb7-ec0b5b23662d', 'description' => 'J95', 'latitude' => 10.7028912, 'longitude' => 124.8024864, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_613616fa-7f20-45dd-beb7-ec0b5b23662d_1775802776413.jpg', 'created_at' => '2026-04-10 14:33:10', 'updated_at' => '2026-04-10 14:33:10'],
+            ['id' => '24f924a4-24c1-4c1f-8cef-ac8071a3f6b1', 'description' => 'J96', 'latitude' => 10.7030692, 'longitude' => 124.8026928, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_24f924a4-24c1-4c1f-8cef-ac8071a3f6b1_1775802786691.jpg', 'created_at' => '2026-04-10 14:33:15', 'updated_at' => '2026-04-10 14:33:15'],
+            ['id' => 'bf335c80-dc68-4957-9acf-32ed10218800', 'description' => 'J97', 'latitude' => 10.7029667, 'longitude' => 124.802765, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_bf335c80-dc68-4957-9acf-32ed10218800_1775802797303.jpg', 'created_at' => '2026-04-10 14:33:29', 'updated_at' => '2026-04-10 14:33:29'],
+            ['id' => '6e69b5b4-ed0e-4713-89dc-2b277d5f981b', 'description' => 'J113', 'latitude' => 10.7026822, 'longitude' => 124.8026486, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_6e69b5b4-ed0e-4713-89dc-2b277d5f981b_1775802798689.jpg', 'created_at' => '2026-04-10 14:33:29', 'updated_at' => '2026-04-10 14:33:29'],
+            ['id' => 'f4a8e777-2ed5-438f-84b0-5a725deff50a', 'description' => 'J124', 'latitude' => 10.7026339, 'longitude' => 124.8025732, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_f4a8e777-2ed5-438f-84b0-5a725deff50a_1775802803304.jpg', 'created_at' => '2026-04-10 14:33:35', 'updated_at' => '2026-04-10 14:33:35'],
+            ['id' => 'd8e5ce86-7c2b-4892-ace1-9b275de7fd35', 'description' => 'J125', 'latitude' => 10.7026683, 'longitude' => 124.8026483, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_d8e5ce86-7c2b-4892-ace1-9b275de7fd35_1775802800903.jpg', 'created_at' => '2026-04-10 14:33:32', 'updated_at' => '2026-04-10 14:33:32'],
+            ['id' => '3278b3ce-3978-4709-b728-215f8f86a78c', 'description' => 'J126', 'latitude' => 10.7024703, 'longitude' => 124.8025447, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_3278b3ce-3978-4709-b728-215f8f86a78c_1775802815569.jpg', 'created_at' => '2026-04-10 14:33:46', 'updated_at' => '2026-04-10 14:33:46'],
+            ['id' => '1b6c3203-9ee6-4f2c-889b-361116203b20', 'description' => 'J127', 'latitude' => 10.702377, 'longitude' => 124.8024143, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_1b6c3203-9ee6-4f2c-889b-361116203b20_1775802812451.jpg', 'created_at' => '2026-04-10 14:33:44', 'updated_at' => '2026-04-10 14:33:44'],
+            ['id' => 'bf413355-a709-4c5f-897d-036f2d9fa916', 'description' => 'J128', 'latitude' => 10.7021648, 'longitude' => 124.8020851, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_bf413355-a709-4c5f-897d-036f2d9fa916_1775802810769.jpg', 'created_at' => '2026-04-10 14:33:43', 'updated_at' => '2026-04-10 14:33:43'],
+            ['id' => '40664f34-1c4a-4a74-8e18-107a0fc4ffd8', 'description' => 'J135', 'latitude' => 10.7022478, 'longitude' => 124.8026474, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_40664f34-1c4a-4a74-8e18-107a0fc4ffd8_1775802809237.jpg', 'created_at' => '2026-04-10 14:33:40', 'updated_at' => '2026-04-10 14:33:40'],
+            ['id' => 'd250c0e1-9fdf-4c0e-8eef-91e51b72b4f5', 'description' => 'J140', 'latitude' => 10.7024823, 'longitude' => 124.8024499, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_d250c0e1-9fdf-4c0e-8eef-91e51b72b4f5_1775802833327.jpg', 'created_at' => '2026-04-10 14:34:15', 'updated_at' => '2026-04-10 14:34:15'],
+            ['id' => '49284825-6d97-43e8-aa14-673876cd6ded', 'description' => 'J141', 'latitude' => 10.7027192, 'longitude' => 124.802546, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_49284825-6d97-43e8-aa14-673876cd6ded_1775802839555.jpg', 'created_at' => '2026-04-10 14:34:18', 'updated_at' => '2026-04-10 14:34:18'],
+            ['id' => '55afd784-66b2-425c-a775-e965d06c3111', 'description' => 'J147', 'latitude' => 10.7025467, 'longitude' => 124.8022883, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_55afd784-66b2-425c-a775-e965d06c3111_1775802847692.jpg', 'created_at' => '2026-04-10 14:34:26', 'updated_at' => '2026-04-10 14:34:26'],
+            ['id' => '3e85866f-3791-4226-b0b7-a9a890dc5b61', 'description' => 'J148', 'latitude' => 10.7027431, 'longitude' => 124.8025359, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_3e85866f-3791-4226-b0b7-a9a890dc5b61_1775802845799.jpg', 'created_at' => '2026-04-10 14:34:25', 'updated_at' => '2026-04-10 14:34:25'],
+            ['id' => '8c7ff3ac-462b-4426-9d27-9e560f0539f7', 'description' => 'J151', 'latitude' => 10.7021205, 'longitude' => 124.8020524, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_8c7ff3ac-462b-4426-9d27-9e560f0539f7_1775802828194.jpg', 'created_at' => '2026-04-10 14:34:06', 'updated_at' => '2026-04-10 14:34:06'],
+            ['id' => 'd7383841-7204-47ed-8faa-c86003a45ca7', 'description' => 'J154', 'latitude' => 10.7023191, 'longitude' => 124.8025674, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_d7383841-7204-47ed-8faa-c86003a45ca7_1775802823186.jpg', 'created_at' => '2026-04-10 14:33:53', 'updated_at' => '2026-04-10 14:33:53'],
+            ['id' => '0e07db40-cf01-4947-b615-5caf1d16e66b', 'description' => 'J155', 'latitude' => 10.7021449, 'longitude' => 124.8020775, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_0e07db40-cf01-4947-b615-5caf1d16e66b_1775802825343.jpg', 'created_at' => '2026-04-10 14:33:59', 'updated_at' => '2026-04-10 14:33:59'],
+            ['id' => 'c5269b52-9ac8-4cba-87e0-fcc204e5610e', 'description' => 'J159', 'latitude' => 10.7023183, 'longitude' => 124.802175, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_c5269b52-9ac8-4cba-87e0-fcc204e5610e_1775802858496.jpg', 'created_at' => '2026-04-10 14:34:30', 'updated_at' => '2026-04-10 14:34:30'],
+            ['id' => 'b9b6f9be-db5f-499a-b3c3-ad6d02e6d3cb', 'description' => 'J160', 'latitude' => 10.7023725, 'longitude' => 124.8021992, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_b9b6f9be-db5f-499a-b3c3-ad6d02e6d3cb_1775802855123.jpg', 'created_at' => '2026-04-10 14:34:30', 'updated_at' => '2026-04-10 14:34:30'],
+            ['id' => '5a00b450-6ae6-4e0c-9a48-c8e57fd14e3c', 'description' => 'J200', 'latitude' => 10.7026953, 'longitude' => 124.8028692, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_5a00b450-6ae6-4e0c-9a48-c8e57fd14e3c_1775802780867.jpg', 'created_at' => '2026-04-10 14:33:13', 'updated_at' => '2026-04-10 14:33:13'],
+            ['id' => '940dadca-81eb-44d7-a6a7-5dd1e0fa58db', 'description' => 'J201', 'latitude' => 10.702425, 'longitude' => 124.8025, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_940dadca-81eb-44d7-a6a7-5dd1e0fa58db_1775802820260.jpg', 'created_at' => '2026-04-10 14:33:51', 'updated_at' => '2026-04-10 14:33:51'],
+            ['id' => '1fe69ee8-9713-46cc-b3ed-62dc0af73f84', 'description' => 'J202', 'latitude' => 10.7025563, 'longitude' => 124.8024812, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_1fe69ee8-9713-46cc-b3ed-62dc0af73f84_1775802831425.jpg', 'created_at' => '2026-04-10 14:34:07', 'updated_at' => '2026-04-10 14:34:07'],
+            
+            // Duplicates renumbered (J66-J73) + Langka 1 as J74
+            ['id' => 'aba5894b-e0b1-4f0e-ae9c-c85ace373be4', 'description' => 'J66', 'latitude' => 10.7036234, 'longitude' => 124.8041086, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_aba5894b-e0b1-4f0e-ae9c-c85ace373be4_1775799893241.jpg', 'created_at' => '2026-04-10 13:45:00', 'updated_at' => '2026-04-10 13:45:00'],
+            ['id' => '890d4356-e9b9-419b-bcc4-1d59a10d01a2', 'description' => 'J67', 'latitude' => 10.7033774, 'longitude' => 124.8033735, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_890d4356-e9b9-419b-bcc4-1d59a10d01a2_1775800269197.jpg', 'created_at' => '2026-04-10 13:50:07', 'updated_at' => '2026-04-10 13:51:18'],
+            ['id' => '43543bc0-f502-41d2-a969-2902759fa292', 'description' => 'J68', 'latitude' => 10.7030142, 'longitude' => 124.803412, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_43543bc0-f502-41d2-a969-2902759fa292_1775802148665.jpg', 'created_at' => '2026-04-10 14:22:35', 'updated_at' => '2026-04-10 14:22:35'],
+            ['id' => 'a2755541-0f35-4481-97a1-f6482c1a99ed', 'description' => 'J69', 'latitude' => 10.7023848, 'longitude' => 124.8031251, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_a2755541-0f35-4481-97a1-f6482c1a99ed_1775802116700.jpg', 'created_at' => '2026-04-10 14:22:04', 'updated_at' => '2026-04-10 14:22:04'],
+            ['id' => '83b7e67b-8e3d-4232-9857-3c0204160967', 'description' => 'J70', 'latitude' => 10.703527, 'longitude' => 124.8037859, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_83b7e67b-8e3d-4232-9857-3c0204160967_1775802207097.jpg', 'created_at' => '2026-04-10 14:23:34', 'updated_at' => '2026-04-10 14:23:34'],
+            ['id' => '30cb8404-8691-4ce9-b2a7-f44fb46c2cc4', 'description' => 'J71', 'latitude' => 10.7032503, 'longitude' => 124.8033583, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_30cb8404-8691-4ce9-b2a7-f44fb46c2cc4_1775802429183.jpg', 'created_at' => '2026-04-10 14:27:15', 'updated_at' => '2026-04-10 14:27:15'],
+            ['id' => 'a5491569-7093-4ad3-9b42-b7413cddcdea', 'description' => 'J72', 'latitude' => 10.7032504, 'longitude' => 124.8033583, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_a5491569-7093-4ad3-9b42-b7413cddcdea_1775802381855.jpg', 'created_at' => '2026-04-10 14:26:27', 'updated_at' => '2026-04-10 14:26:27'],
+            ['id' => '5b468be2-7e44-4769-a47e-5f4472ad638a', 'description' => 'J73', 'latitude' => 10.7031597, 'longitude' => 124.8032823, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_5b468be2-7e44-4769-a47e-5f4472ad638a_1775802346253.jpg', 'created_at' => '2026-04-10 14:25:52', 'updated_at' => '2026-04-10 14:25:52'],
+            ['id' => '57dc2dc2-09c0-44c1-94a1-48373d7f0003', 'description' => 'J74', 'latitude' => 10.7033787, 'longitude' => 124.8033777, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_57dc2dc2-09c0-44c1-94a1-48373d7f0003_1775800075748.jpg', 'created_at' => '2026-04-10 13:48:06', 'updated_at' => '2026-04-10 13:48:06'],
+            ['id' => '0a3bd6e3-4aad-4b78-80cf-7e1659928fa8', 'description' => 'J75', 'latitude' => 10.7021217, 'longitude' => 124.8020567, 'status' => 'active', 'is_synced' => true, 'type' => 'Langka', 'image_url' => 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/tree_0a3bd6e3-4aad-4b78-80cf-7e1659928fa8_1775801585610.jpg', 'created_at' => '2026-04-10 14:13:15', 'updated_at' => '2026-04-10 14:13:15'],
         ];
 
-        $imageUrl = 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/Tree/images.jpg';
-
-        // Create all trees
+        $count = 0;
         foreach ($trees as $tree) {
-            Tree::create([
-                'id' => $tree['id'],
-                'description' => $tree['description'],
-                'latitude' => $tree['latitude'],
-                'longitude' => $tree['longitude'],
-                'status' => 'active',
-                'is_synced' => true,
-                'type' => 'Langka',
-                'image_url' => $imageUrl,
-            ]);
-            
-            $this->command->info("   ✅ Created: {$tree['description']} - ID: {$tree['id']}");
+            Tree::create($tree);
+            $count++;
         }
 
         $this->command->info('====================================');
-        $this->command->info('🌳 ' . Tree::count() . ' Langka trees seeded successfully!');
+        $this->command->info("🌳 {$count} Langka trees seeded successfully!");
         $this->command->info('====================================');
-        $this->command->info('📍 East Langka #1 to #5');
-        $this->command->info('📍 North Langka #1 to #5');
-        $this->command->info('📍 South Langka #1 to #5');
-        $this->command->info('📍 West Langka #1 to #5');
-        $this->command->info('====================================');
-        $this->command->info('🖼️  Image: ' . $imageUrl);
     }
 }

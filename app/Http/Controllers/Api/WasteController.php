@@ -15,7 +15,7 @@ class WasteController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
+ public function index(Request $request)
     {
         $query = Waste::with('harvest');
 
@@ -57,9 +57,8 @@ class WasteController extends Controller
         $sortOrder = $request->get('sort_order', 'desc');
         $query->orderBy($sortField, $sortOrder);
 
-        // Pagination
-        $perPage = $request->get('per_page', 15);
-        $wastes = $query->paginate($perPage);
+        // Get all data without pagination
+        $wastes = $query->get();
 
         return response()->json([
             'success' => true,

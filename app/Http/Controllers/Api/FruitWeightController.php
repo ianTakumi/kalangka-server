@@ -42,9 +42,8 @@ class FruitWeightController extends Controller
         $sortOrder = $request->get('sort_order', 'desc');
         $query->orderBy($sortField, $sortOrder);
 
-        // Pagination
-        $perPage = $request->get('per_page', 15);
-        $fruitWeights = $query->paginate($perPage);
+        // Get all data without pagination
+        $fruitWeights = $query->get();
 
         return response()->json([
             'success' => true,
