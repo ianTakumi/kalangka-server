@@ -32,6 +32,11 @@ use App\Http\Controllers\Api\ArticleController;
 // Tree API Routes\
 Route::apiResource('trees', TreeController::class);
 
+Route::get('/trees/{id}/harvest-prediction', [TreeController::class, 'getHarvestPrediction']);
+
+// All trees harvest prediction (dashboard summary)
+Route::get('/trees/harvest-predictions/all', [TreeController::class, 'getAllHarvestPredictions']);
+
 // Flower routes api
 Route::apiResource("flowers", FlowerController::class);
 
