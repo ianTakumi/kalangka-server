@@ -9,6 +9,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use App\Mail\ResetPasswordMail;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -17,65 +22,65 @@ class AuthController extends Controller
      */
     
    public function register(Request $request)
-{
-    // Validate request - add id and role validation
-    $validator = Validator::make($request->all(), [
-        'id' => 'sometimes|string|uuid', // Optional pero i-validate kung present
-        'first_name' => 'required|string|max:100',
-        'last_name' => 'required|string|max:100',
-        'email' => 'required|string|email|max:255|unique:users',
-        'gender' => 'required|string|in:male,female', // Specify allowed values
-        'role' => 'sometimes|string|in:user,admin,manager,worker,supervisor', // Add role validation
-        'password' => 'required|string|min:8',
-    ]);
+    {
+        // Validate request - add id and role validation
+        $validator = Validator::make($request->all(), [
+            'id' => 'sometimes|string|uuid', // Optional pero i-validate kung present
+            'first_name' => 'required|string|max:100',
+            'last_name' => 'required|string|max:100',
+            'email' => 'required|string|email|max:255|unique:users',
+            'gender' => 'required|string|in:male,female', // Specify allowed values
+            'role' => 'sometimes|string|in:user,admin,manager,worker,supervisor', // Add role validation
+            'password' => 'required|string|min:8',
+        ]);
 
-    if ($validator->fails()) {
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Prepare user data
+        $userData = [
+            'first_name' => $request->first_name,
+            'last_name' => $request->last_name,
+            'email' => $request->email,
+            'gender' => $request->gender,
+            'password' => Hash::make($request->password),
+        ];
+
+        // Include ID if provided (for sync from mobile)
+        if ($request->has('id')) {
+            $userData['id'] = $request->id;
+        }
+
+        // Include role if provided, otherwise default to 'user'
+        $userData['role'] = $request->role ?? 'user';
+
+        // Create user
+        $user = User::create($userData);
+
+        // Create token
+        $token = $user->createToken('auth_token')->plainTextToken;
+
         return response()->json([
-            'success' => false,
-            'message' => 'Validation error',
-            'errors' => $validator->errors()
-        ], 422);
+            'success' => true,
+            'message' => 'Registration successful',
+            'user' => [
+                'id' => $user->id,
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'gender' => $user->gender,
+                'created_at' => $user->created_at,
+            ],
+            'access_token' => $token,
+            'token_type' => 'Bearer'
+        ], 201);
     }
-
-    // Prepare user data
-    $userData = [
-        'first_name' => $request->first_name,
-        'last_name' => $request->last_name,
-        'email' => $request->email,
-        'gender' => $request->gender,
-        'password' => Hash::make($request->password),
-    ];
-
-    // Include ID if provided (for sync from mobile)
-    if ($request->has('id')) {
-        $userData['id'] = $request->id;
-    }
-
-    // Include role if provided, otherwise default to 'user'
-    $userData['role'] = $request->role ?? 'user';
-
-    // Create user
-    $user = User::create($userData);
-
-    // Create token
-    $token = $user->createToken('auth_token')->plainTextToken;
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Registration successful',
-        'user' => [
-            'id' => $user->id,
-            'first_name' => $user->first_name,
-            'last_name' => $user->last_name,
-            'email' => $user->email,
-            'role' => $user->role,
-            'gender' => $user->gender,
-            'created_at' => $user->created_at,
-        ],
-        'access_token' => $token,
-        'token_type' => 'Bearer'
-    ], 201);
-}
 
     /**
      * Login user
@@ -325,6 +330,110 @@ class AuthController extends Controller
             'success' => true,
             'exists' => $exists,
             'message' => $exists ? 'Email already registered' : 'Email available'
+        ]);
+    }
+
+    /**
+ * Send password reset link
+ */
+public function forgotPassword(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'email' => 'required|email|exists:users,email',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Validation error',
+            'errors' => $validator->errors()
+        ], 422);
+    }
+
+    // Generate token
+    $token = Str::random(64);
+
+    // Delete old tokens for this email
+    DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+    // Insert new token
+    DB::table('password_reset_tokens')->insert([
+        'email' => $request->email,
+        'token' => $token,
+        'created_at' => Carbon::now(),
+    ]);
+
+    try {
+        // Send email with reset link
+        Mail::to($request->email)->send(new ResetPasswordMail($token, $request->email));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password reset link sent to your email'
+        ]);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to send reset link. Please try again later.',
+            'error' => $e->getMessage() // Remove this in production
+        ], 500);
+    }
+}
+
+    /**
+     * Reset password using token
+     */
+    public function resetPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:users,email',
+            'token' => 'required|string',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Check if token exists
+        $resetRecord = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->where('token', $request->token)
+            ->first();
+
+        if (!$resetRecord) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid or expired token'
+            ], 400);
+        }
+
+        // Check if token is expired (optional: 60 minutes expiry)
+        $tokenCreatedAt = Carbon::parse($resetRecord->created_at);
+        if ($tokenCreatedAt->diffInMinutes(Carbon::now()) > 60) {
+            DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+            return response()->json([
+                'success' => false,
+                'message' => 'Token has expired. Please request a new reset link.'
+            ], 400);
+        }
+
+        // Update user password
+        $user = User::where('email', $request->email)->first();
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        // Delete the token after successful reset
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Password reset successfully'
         ]);
     }
 }

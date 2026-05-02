@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
                 'first_name' => 'WrapCrop',
                 'last_name' => 'admin',
                 'gender' => 'male',
-                'email' => 'wrapcrop@gmail.com',
+                'email' => 'wrapcrop.support@gmail.com',
                 'role' => 'admin',
                 'password' => 'Password123!',
             ],
