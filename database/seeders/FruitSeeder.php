@@ -33,8 +33,19 @@ class FruitSeeder extends Seeder
         $this->command->info('🚫 Excluding admin users from fruit records');
         $this->command->info('====================================');
 
-        // Fruit image URL
-        $imageUrl = 'https://gujmgaqntmdvqvvlwqhf.supabase.co/storage/v1/object/public/kalangka/fruits/samplefruit.jpg';
+        // Array of 5 fruit image URLs to randomize
+        $fruitImageUrls = [
+            'https://ugigkldnrrwsxdshpxjz.supabase.co/storage/v1/object/public/kalangka/fruits/fruit%201.png',
+            'https://ugigkldnrrwsxdshpxjz.supabase.co/storage/v1/object/public/kalangka/fruits/fruit%202.png',
+            'https://ugigkldnrrwsxdshpxjz.supabase.co/storage/v1/object/public/kalangka/fruits/fruit%203.png',
+            'https://ugigkldnrrwsxdshpxjz.supabase.co/storage/v1/object/public/kalangka/fruits/fruit%204.png',
+            'https://ugigkldnrrwsxdshpxjz.supabase.co/storage/v1/object/public/kalangka/fruits/fruit%205.jpg',
+        ];
+
+        // Helper function to get a random fruit image URL
+        $getRandomFruitImage = function() use ($fruitImageUrls) {
+            return $fruitImageUrls[array_rand($fruitImageUrls)];
+        };
         
         // Helper function to get random date from January 2026 to current month
         $getRandomDate = function() {
@@ -64,6 +75,7 @@ class FruitSeeder extends Seeder
         $userFruitCount = [];
         $userFruitQuantity = [];
         $userFruitDates = []; // Track dates per user for summary
+        $userFruitImages = []; // Track images per user
         
         // Get all non-admin users from flowers and initialize tracking
         $users = $flowers->pluck('user')->unique('id')->filter(function ($user) {
@@ -78,6 +90,7 @@ class FruitSeeder extends Seeder
             $userFruitCount[$user->id] = 0;
             $userFruitQuantity[$user->id] = 0;
             $userFruitDates[$user->id] = [];
+            $userFruitImages[$user->id] = [];
         }
 
         // Count admin users that were excluded
@@ -128,6 +141,9 @@ class FruitSeeder extends Seeder
                 $fruitCreatedAt = $getRandomDate();
                 $baggedAt = clone $fruitCreatedAt;
                 
+                // Get random fruit image
+                $randomFruitImage = $getRandomFruitImage();
+                
                 // Calculate fruit quantity based on remaining capacity
                 $remainingCapacity = $maxFruitPerFlower - $flowerFruitTotal;
                 
@@ -150,6 +166,9 @@ class FruitSeeder extends Seeder
                     // Assign tag_id (cycles 1-4)
                     $tagId = $currentTagId;
                     
+                    // Extract image number for display
+                    $imageNumber = array_search($randomFruitImage, $fruitImageUrls) + 1;
+                    
                     Fruit::create([
                         'id' => $fruitIds[$fruitIndex++],
                         'flower_id' => $flower->id,
@@ -158,7 +177,7 @@ class FruitSeeder extends Seeder
                         'quantity' => $fruitQuantity,
                         'tag_id' => $tagId,
                         'bagged_at' => $baggedAt,
-                        'image_url' => $imageUrl,
+                        'image_url' => $randomFruitImage,
                         'created_at' => $fruitCreatedAt,
                         'updated_at' => $fruitCreatedAt,
                     ]);
@@ -171,10 +190,12 @@ class FruitSeeder extends Seeder
                     $userFruitCount[$flower->user_id]++;
                     $userFruitQuantity[$flower->user_id] += $fruitQuantity;
                     $userFruitDates[$flower->user_id][] = $fruitCreatedAt->format('Y-m-d');
+                    $userFruitImages[$flower->user_id][] = $imageNumber;
                     
                     $this->command->info("   🍎 Fruit {$i}: {$fruitQuantity} fruits (Running total: {$flowerFruitTotal}/{$maxFruitPerFlower})");
                     $this->command->info("      📅 Date: {$fruitCreatedAt->format('F j, Y')} ({$fruitCreatedAt->diffForHumans()})");
                     $this->command->info("      🏷️  Batch # (tag_id): {$tagId}");
+                    $this->command->info("      🖼️  Image: fruit {$imageNumber}");
                     $this->command->info("      👤 Assigned to user: {$userName}");
                 } else {
                     $this->command->info("   ⚠️  Fruit {$i}: No fruits (max capacity reached: {$flowerFruitTotal}/{$maxFruitPerFlower})");
@@ -226,6 +247,10 @@ class FruitSeeder extends Seeder
                         $baggedAt = clone $fruitCreatedAt;
                         $fruitQuantity = rand(1, 3);
                         
+                        // Get random fruit image
+                        $randomFruitImage = $getRandomFruitImage();
+                        $imageNumber = array_search($randomFruitImage, $fruitImageUrls) + 1;
+                        
                         // Assign current tag_id (cycles 1-4)
                         $tagId = $currentTagId;
                         
@@ -237,7 +262,7 @@ class FruitSeeder extends Seeder
                             'quantity' => $fruitQuantity,
                             'tag_id' => $tagId,
                             'bagged_at' => $baggedAt,
-                            'image_url' => $imageUrl,
+                            'image_url' => $randomFruitImage,
                             'created_at' => $fruitCreatedAt,
                             'updated_at' => $fruitCreatedAt,
                         ]);
@@ -247,10 +272,12 @@ class FruitSeeder extends Seeder
                         $userFruitCount[$user->id]++;
                         $userFruitQuantity[$user->id] += $fruitQuantity;
                         $userFruitDates[$user->id][] = $fruitCreatedAt->format('Y-m-d');
+                        $userFruitImages[$user->id][] = $imageNumber;
                         
                         $this->command->info("   🍎 Fruit {$j}: {$fruitQuantity} fruits");
                         $this->command->info("      📅 Date: {$fruitCreatedAt->format('F j, Y')} ({$fruitCreatedAt->diffForHumans()})");
                         $this->command->info("      🏷️  Batch # (tag_id): {$tagId}");
+                        $this->command->info("      🖼️  Image: fruit {$imageNumber}");
                         
                         // Increment tag_id and reset to 1 if exceeds 4
                         $currentTagId++;
@@ -317,9 +344,20 @@ class FruitSeeder extends Seeder
             $percentage = $totalFruits > 0 ? round(($count / $totalFruits) * 100, 2) : 0;
             $this->command->info("   • Batch {$tagId}: {$count} fruit records ({$percentage}%)");
         }
+        
+        // Display fruit image distribution
+        $this->command->info('');
+        $this->command->info('🖼️  FRUIT IMAGE DISTRIBUTION:');
+        foreach ($fruitImageUrls as $index => $imageUrl) {
+            $imageCount = Fruit::where('image_url', $imageUrl)->count();
+            $fruitNumber = $index + 1;
+            $extension = $index === 4 ? 'jpg' : 'png';
+            $this->command->info("   🍎 fruit {$fruitNumber}.{$extension}: {$imageCount} fruit(s)");
+        }
+        
+        $this->command->info('');
         $this->command->info('====================================');
         $this->command->info('🚫 Admin users are excluded from fruit records');
-        $this->command->info('🖼️  Fruit Image: ' . $imageUrl);
         $this->command->info('📅 All dates are randomized from January 2026 to ' . Carbon::now()->format('F Y'));
         $this->command->info('====================================');
     }

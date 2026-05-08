@@ -12,6 +12,7 @@ use Database\Seeders\FlowerSeeder;
 use Database\Seeders\FruitSeeder;
 use Database\Seeders\HarvestSeeder;
 use Database\Seeders\ContactSeeder;
+use Database\Seeders\ArticleSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -37,5 +38,6 @@ class DatabaseSeeder extends Seeder
         $this->call(FruitSeeder::class);
         $this->call(HarvestSeeder::class);
         $this->call(ContactSeeder::class);
+        $this->call(ArticleSeeder::class);
     }
 }
