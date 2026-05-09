@@ -46,6 +46,10 @@ Route::apiResource("fruits", FruitController::class);
 // Articles routes api
 Route::apiResource("articles", ArticleController::class);
 
+// Custom route to get article by slug
+Route::get('articles/slug/{slug}', [ArticleController::class, 'showBySlug']);
+
+
 // Harvest routes
 Route::apiResource('harvests', HarvestController::class);
 Route::get('fruits/{fruitId}/harvests', [HarvestController::class, 'getByFruit']);

@@ -49,6 +49,27 @@ class ArticleController extends Controller
         ], 201);
     }
 
+      /**
+     * Display the specified resource by slug.
+     */
+    public function showBySlug(string $slug)
+    {
+        $article = Article::where('slug', $slug)->first();
+
+        if (!$article) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Article not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $article,
+            'message' => 'Article retrieved successfully'
+        ], 200);
+    }
+
     /**
      * Display the specified resource.
      */
