@@ -84,7 +84,7 @@ class UserSeeder extends Seeder
                 'last_name' => 'One',
                 'gender' => 'male',
                 'email' => 'farmer1@gmail.com',
-                'role' => 'admin',
+                'role' => 'user',
                 'password' => 'Password123!',
             ],
         ];
