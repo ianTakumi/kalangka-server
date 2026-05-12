@@ -11,12 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 class HarvestSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // Get all fruits
         $fruits = Fruit::all();
         
         if ($fruits->isEmpty()) {
@@ -24,7 +20,6 @@ class HarvestSeeder extends Seeder
             return;
         }
 
-        // Get all users (workers)
         $users = User::where('role', 'user')->get();
         
         if ($users->isEmpty()) {
@@ -34,456 +29,299 @@ class HarvestSeeder extends Seeder
 
         $this->command->info('====================================');
         $this->command->info('🌾 Creating harvest records for fruits...');
-        $this->command->info('📅 Date range: January 2026 to ' . Carbon::now()->format('F Y'));
         $this->command->info('====================================');
 
-        // Helper function to get random date from January 2026 to current month
-        $getRandomDate = function() {
-            $startDate = Carbon::create(2026, 1, 1); // January 1, 2026
-            $endDate = Carbon::now(); // Current date
+        $totalHarvests = 0;
+        $harvestedFruitIds = [];
+
+        foreach ($fruits as $fruit) {
+            if (in_array($fruit->id, $harvestedFruitIds)) {
+                continue;
+            }
+
+            $baggedAt = Carbon::parse($fruit->bagged_at);
+            $today = Carbon::now();
             
-            // If start date is in the future, use current date minus 6 months
-            if ($startDate->gt($endDate)) {
-                $startDate = Carbon::now()->subMonths(6);
+            // Calculate actual days since bagged (based on today, not random)
+            $daysSinceBagged = $baggedAt->diffInDays($today);
+            
+            // Only create harvest if fruit is at least 110 days old
+            if ($daysSinceBagged < 110) {
+                $this->command->info("⏭️  Skipping fruit ID: {$fruit->id} (only {$daysSinceBagged} days old, need 110+)");
+                continue;
             }
             
-            // Get random timestamp between start and end date
-            $randomTimestamp = rand($startDate->timestamp, $endDate->timestamp);
-            $randomDate = Carbon::createFromTimestamp($randomTimestamp);
+            $fruitQuantity = $fruit->quantity;
+            $randomUser = $users->random();
             
-            // Set random time within the day
-            $randomDate->setTime(rand(0, 23), rand(0, 59), rand(0, 59));
+            // Determine harvest status based on actual days since bagged
+            if ($daysSinceBagged >= 120) {
+                // Harvested - complete child records
+                $hasHarvestDate = true;
+                $initialStatus = 'harvested';
+                
+                // Harvest date is between 115-120 days after bagged
+                $minHarvestDate = $baggedAt->copy()->addDays(115);
+                $maxHarvestDate = $baggedAt->copy()->addDays(120);
+                if ($maxHarvestDate > $today) $maxHarvestDate = $today;
+                
+                $randomTimestamp = rand($minHarvestDate->timestamp, $maxHarvestDate->timestamp);
+                $harvestDate = Carbon::createFromTimestamp($randomTimestamp);
+                $harvestDate->setTime(rand(0, 23), rand(0, 59), rand(0, 59));
+                
+            } elseif ($daysSinceBagged >= 115) {
+                // Partial - some child records
+                $hasHarvestDate = true;
+                $initialStatus = 'partial';
+                
+                // Harvest date is between 110-115 days after bagged
+                $minHarvestDate = $baggedAt->copy()->addDays(110);
+                $maxHarvestDate = $baggedAt->copy()->addDays(115);
+                if ($maxHarvestDate > $today) $maxHarvestDate = $today;
+                
+                $randomTimestamp = rand($minHarvestDate->timestamp, $maxHarvestDate->timestamp);
+                $harvestDate = Carbon::createFromTimestamp($randomTimestamp);
+                $harvestDate->setTime(rand(0, 23), rand(0, 59), rand(0, 59));
+                
+            } else {
+                // Pending - 110-114 days, no harvest date yet
+                $hasHarvestDate = false;
+                $initialStatus = 'pending';
+                $harvestDate = null;
+            }
+
+            // Create harvest record
+            $harvest = Harvest::create([
+                'id' => $this->generateUUID(),
+                'fruit_id' => $fruit->id,
+                'user_id' => $randomUser->id,
+                'ripe_quantity' => $hasHarvestDate ? $fruitQuantity : null,
+                'harvest_at' => $harvestDate,
+                'status' => $initialStatus,
+                'created_at' => $today,
+                'updated_at' => $today,
+            ]);
             
-            return $randomDate;
-        };
+            $totalHarvests++;
+            $harvestedFruitIds[] = $fruit->id;
+            
+            $this->command->info("🌾 Harvest created for fruit ID: {$fruit->id}");
+            $this->command->info("   📦 Fruit quantity: {$fruitQuantity}");
+            $this->command->info("   📅 Bagged at: {$baggedAt->format('Y-m-d')}");
+            $this->command->info("   📊 Days since bagged: {$daysSinceBagged}");
+            $this->command->info("   📍 Status: {$initialStatus}");
+            $this->command->info("   📍 Harvest date: " . ($harvestDate ? $harvestDate->format('Y-m-d') : 'NOT YET SCHEDULED'));
+            
+            // If harvest has a date, create child records (fruit_weights and wastes)
+            if ($hasHarvestDate) {
+                $this->createChildRecordsForHarvest($harvest, $fruitQuantity, $initialStatus);
+            } else {
+                $this->command->info("   ⏳ No child records (pending harvest)");
+            }
+            
+            $this->command->info('');
+        }
         
-        $totalHarvests = 0;
+        $this->command->info('====================================');
+        $this->command->info("📊 Total harvest records created: {$totalHarvests} out of {$fruits->count()} fruits");
+        $this->command->info('====================================');
+        
+        // Display summary by days range
+        $this->displayHarvestSummary($fruits);
+        
+        // Update all harvest statuses based on child records
+        $this->updateAllHarvestStatuses();
+        
+        $this->displayFinalSummary();
+    }
+    
+    private function displayHarvestSummary($fruits): void
+    {
+        $this->command->info('');
+        $this->command->info('📊 FRUIT AGE DISTRIBUTION:');
+        
+        $pending110_114 = 0;
+        $partial115_119 = 0;
+        $harvested120plus = 0;
+        $tooYoung = 0;
+        
+        $today = Carbon::now();
+        
+        foreach ($fruits as $fruit) {
+            $baggedAt = Carbon::parse($fruit->bagged_at);
+            $daysSinceBagged = $baggedAt->diffInDays($today);
+            
+            if ($daysSinceBagged >= 120) {
+                $harvested120plus++;
+            } elseif ($daysSinceBagged >= 115) {
+                $partial115_119++;
+            } elseif ($daysSinceBagged >= 110) {
+                $pending110_114++;
+            } else {
+                $tooYoung++;
+            }
+        }
+        
+        $this->command->info("   🟢 120+ days (Harvested): {$harvested120plus} fruits");
+        $this->command->info("   🟡 115-119 days (Partial): {$partial115_119} fruits");
+        $this->command->info("   🟠 110-114 days (Pending): {$pending110_114} fruits");
+        $this->command->info("   ⚪ Below 110 days (No harvest): {$tooYoung} fruits");
+        $this->command->info('====================================');
+    }
+    
+    /**
+     * Create fruit_weights and wastes for a harvest
+     * Total child records MUST equal fruit quantity
+    */
+    private function createChildRecordsForHarvest($harvest, int $fruitQuantity, string $status): void
+    {
+        $weightDate = $harvest->harvest_at;
+        $weighedCount = 0;
+        $wasteCount = 0;
+        
+        if ($status === 'harvested') {
+            // HARVESTED: Complete - all fruits have child records
+            // Random waste percentage 0-15%
+            $wastePercentage = rand(0, 15);
+            $wasteCount = (int) round(($wastePercentage / 100) * $fruitQuantity);
+            $weighedCount = $fruitQuantity - $wasteCount;
+            
+            $this->command->info("   📊 HARVESTED: {$weighedCount} weighed, {$wasteCount} wasted (Total: {$fruitQuantity})");
+            
+        } else {
+            // PARTIAL: Only 1 child record total (either 1 weight OR 1 waste)
+            // Randomly decide: 50% chance for 1 weight, 50% chance for 1 waste
+            $isWeight = rand(0, 1) === 1;
+            
+            if ($isWeight) {
+                $weighedCount = 1;
+                $wasteCount = 0;
+                $this->command->info("   📊 PARTIAL: 1 fruit weight, 0 wasted (Incomplete)");
+            } else {
+                $weighedCount = 0;
+                $wasteCount = 1;
+                $this->command->info("   📊 PARTIAL: 0 fruit weight, 1 wasted (Incomplete)");
+            }
+        }
+        
+        // Create fruit_weights
+        for ($i = 0; $i < $weighedCount; $i++) {
+        
+           $weight = rand(300, 1000) / 100; // 3.00kg to 10.00kg
+            $weightStatus = $weight < 0.8 ? 'local' : 'national';
+            
+            DB::table('fruit_weights')->insert([
+                'id' => $this->generateUUID(),
+                'harvest_id' => $harvest->id,
+                'weight' => $weight,
+                'status' => $weightStatus,
+                'created_at' => $weightDate,
+                'updated_at' => $weightDate,
+            ]);
+        }
+        
+        // Create wastes
+        $wasteReasons = [
+            'rotten', 'pest_infestation', 'disease', 
+            'animal_damage', 'weather_damage', 'overripe', 'physical_damage'
+        ];
+        
+        for ($i = 0; $i < $wasteCount; $i++) {
+            $reason = $wasteReasons[array_rand($wasteReasons)];
+            
+            DB::table('wastes')->insert([
+                'id' => $this->generateUUID(),
+                'harvest_id' => $harvest->id,
+                'waste_quantity' => 1,
+                'reason' => $reason,
+                'reported_at' => $weightDate,
+                'created_at' => $weightDate,
+                'updated_at' => $weightDate,
+            ]);
+        }
+        
+        $this->command->info("   ✅ Created {$weighedCount} fruit weights, {$wasteCount} waste records");
+        $this->command->info("   🎯 Total child records: " . ($weighedCount + $wasteCount) . " / {$fruitQuantity}");
+        
+        // Update ripe_quantity = weighed fruits
+        $harvest->update([
+            'ripe_quantity' => $weighedCount
+        ]);
+    }
+    
+    /**
+     * Update harvest statuses based on child records
+     */
+    private function updateAllHarvestStatuses(): void
+    {
+        $this->command->info('');
+        $this->command->info('📊 Verifying harvest statuses...');
+        
         $harvestStats = [
             'pending' => 0,
             'partial' => 0,
             'harvested' => 0
         ];
-
-        // Track which fruits are harvested to avoid duplicates
-        $harvestedFruitIds = [];
-        
-        // Track date ranges
-        $harvestDates = [];
-
-        // Create harvest records
-        foreach ($fruits as $fruit) {
-            // Skip if already harvested
-            if (in_array($fruit->id, $harvestedFruitIds)) {
-                continue;
-            }
-
-            // Get random date for this harvest
-            $randomDate = $getRandomDate();
-            $baggedAt = Carbon::parse($fruit->bagged_at);
-            
-            // Calculate days between bagged_at and random date
-            $daysSinceBagged = $baggedAt->diffInDays($randomDate);
-            
-            // Determine if fruit should be assigned for harvest (115+ days old)
-            $shouldAssign = $daysSinceBagged >= 115;
-            $harvestDate = null;
-            $ripeQuantity = null;
-            $status = 'pending';
-            
-            if ($shouldAssign) {
-                // Check if the random date is >= 120 days after bagged
-                if ($daysSinceBagged >= 120) {
-                    // This harvest has a date (partial/harvested)
-                    $harvestDate = $randomDate;
-                    $ripeQuantity = round($fruit->quantity * (rand(50, 90) / 100));
-                    $status = 'partial';
-                    $harvestStats['partial']++;
-                    $harvestDates[] = $harvestDate->format('Y-m-d');
-                } else {
-                    // Pending harvest (no date)
-                    $ripeQuantity = null;
-                    $status = 'pending';
-                    $harvestDate = null;
-                    $harvestStats['pending']++;
-                }
-            }
-            
-            // Create harvest record if should assign
-            if ($shouldAssign) {
-                $randomUser = $users->random();
-                $harvestId = $this->generateUUID();
-                
-                Harvest::create([
-                    'id' => $harvestId,
-                    'fruit_id' => $fruit->id,
-                    'user_id' => $randomUser->id,
-                    'ripe_quantity' => $ripeQuantity,
-                    'harvest_at' => $harvestDate,
-                    'status' => $status,
-                    'created_at' => $harvestDate ?? $randomDate,
-                    'updated_at' => $harvestDate ?? $randomDate,
-                ]);
-                
-                $totalHarvests++;
-                $harvestedFruitIds[] = $fruit->id;
-                
-                $this->command->info("🌾 Harvest record created for fruit ID: {$fruit->id}");
-                $this->command->info("   📅 Bagged at: {$baggedAt->format('Y-m-d')}");
-                $this->command->info("   📊 Days since bagged: {$daysSinceBagged}");
-                $this->command->info("   🌾 Status: {$status}");
-                $this->command->info("   👤 Assigned to: {$randomUser->name}");
-                $this->command->info("   🍎 Fruit quantity: {$fruit->quantity}");
-                
-                if ($status !== 'pending' && $ripeQuantity > 0) {
-                    $this->command->info("   ✅ Ripe quantity: {$ripeQuantity}");
-                    $this->command->info("   📅 Harvest date: {$harvestDate->format('F j, Y')}");
-                } else {
-                    $this->command->info("   ⏳ Harvest not yet performed (pending)");
-                    $this->command->info("   📅 Created at: {$randomDate->format('F j, Y')}");
-                }
-                $this->command->info('');
-            }
-            
-            // Stop if we reached enough harvests
-            if ($totalHarvests >= 50) {
-                break;
-            }
-        }
-
-        // Create additional completed harvests if needed (these will have harvest dates)
-        if ($totalHarvests < 50) {
-            $this->command->info("⚠️  Only {$totalHarvests} harvest records created. Creating additional completed harvests...");
-            
-            $remainingFruits = $fruits->whereNotIn('id', $harvestedFruitIds);
-            
-            foreach ($remainingFruits as $fruit) {
-                if ($totalHarvests >= 50) break;
-                
-                $randomDate = $getRandomDate();
-                $baggedAt = Carbon::parse($fruit->bagged_at);
-                $daysSinceBagged = $baggedAt->diffInDays($randomDate);
-                
-                // Ensure the date is at least 120 days after bagged
-                if ($daysSinceBagged < 120) {
-                    // If not enough days, adjust the date
-                    $randomDate = $baggedAt->copy()->addDays(rand(120, 150));
-                    if ($randomDate > Carbon::now()) {
-                        $randomDate = Carbon::now();
-                    }
-                }
-                
-                $randomUser = $users->random();
-                
-                // Create completed harvest (with date)
-                $ripeQuantity = round($fruit->quantity * (rand(50, 90) / 100));
-                $status = 'partial';
-                
-                $harvestId = $this->generateUUID();
-                
-                Harvest::create([
-                    'id' => $harvestId,
-                    'fruit_id' => $fruit->id,
-                    'user_id' => $randomUser->id,
-                    'ripe_quantity' => $ripeQuantity,
-                    'harvest_at' => $randomDate,
-                    'status' => $status,
-                    'created_at' => $randomDate,
-                    'updated_at' => $randomDate,
-                ]);
-                
-                $totalHarvests++;
-                $harvestStats['partial']++;
-                $harvestDates[] = $randomDate->format('Y-m-d');
-                
-                $this->command->info("➕ Additional harvest created for fruit ID: {$fruit->id}");
-                $this->command->info("   📅 Harvest date: {$randomDate->format('F j, Y')}");
-                $this->command->info("   📊 Days since bagged: {$daysSinceBagged}");
-                $this->command->info('');
-            }
-        }
-
-        // Get date range statistics
-        $oldestHarvest = Harvest::whereNotNull('harvest_at')->orderBy('harvest_at', 'asc')->first();
-        $newestHarvest = Harvest::whereNotNull('harvest_at')->orderBy('harvest_at', 'desc')->first();
-
-        $this->command->info('====================================');
-        $this->command->info('🌾 HARVEST SUMMARY');
-        $this->command->info('====================================');
-        $this->command->info('📊 Total harvest records created: ' . $totalHarvests);
-        $this->command->info('📈 Harvest Status Distribution:');
-        $this->command->info('   ⏳ Pending (no harvest date): ' . $harvestStats['pending']);
-        $this->command->info('   📋 Partial/Completed (has harvest date): ' . $harvestStats['partial']);
-        $this->command->info('');
-        $this->command->info('📅 DATE RANGE STATISTICS:');
-        if ($oldestHarvest && $newestHarvest) {
-            $this->command->info("   🌾 Oldest harvest date: " . $oldestHarvest->harvest_at->format('F j, Y'));
-            $this->command->info("   🌾 Newest harvest date: " . $newestHarvest->harvest_at->format('F j, Y'));
-            $this->command->info("   📊 Timespan: " . $oldestHarvest->harvest_at->diffForHumans($newestHarvest->harvest_at, true));
-        }
-        $this->command->info('====================================');
-        
-        // Create fruit weights for harvests that have harvest dates
-        $this->createFruitWeights($getRandomDate);
-        
-        // Create waste records for some harvests
-        $this->createWasteRecords($getRandomDate);
-        
-        // Update harvest status based on total processed (weights + wastes)
-        $this->updateHarvestStatuses();
-    }
-    
-    /**
-     * Create fruit weight records for harvests
-     */
-    private function createFruitWeights(callable $getRandomDate): void
-    {
-        $this->command->info('');
-        $this->command->info('⚖️  Creating fruit weight records for harvests...');
-        
-        // Only get harvests that have actual harvest dates (not pending)
-        $harvests = Harvest::whereNotNull('harvest_at')
-            ->whereNotNull('ripe_quantity')
-            ->where('ripe_quantity', '>', 0)
-            ->get();
-        
-        $weightCount = 0;
-        $weightDates = [];
-        
-        foreach ($harvests as $harvest) {
-            // Create weight records for 70% of harvests
-            if (rand(1, 100) <= 70) {
-                $numberOfWeights = rand(1, min(5, $harvest->ripe_quantity));
-                $weightDate = $getRandomDate();
-                
-                // Ensure weight date is not before harvest date
-                if ($weightDate < $harvest->harvest_at) {
-                    $weightDate = $harvest->harvest_at;
-                }
-                
-                for ($i = 0; $i < $numberOfWeights; $i++) {
-                    $weight = rand(50, 300) / 100;
-                    $status = $weight < 8 ? 'local' : 'national';
-                    
-                    $weightId = $this->generateUUID();
-                    
-                    DB::table('fruit_weights')->insert([
-                        'id' => $weightId,
-                        'harvest_id' => $harvest->id,
-                        'weight' => $weight,
-                        'status' => $status,
-                        'created_at' => $weightDate,
-                        'updated_at' => $weightDate,
-                    ]);
-                    
-                    $weightCount++;
-                    $weightDates[] = $weightDate->format('Y-m-d');
-                }
-            }
-        }
-        
-        $this->command->info("✅ Created {$weightCount} fruit weight records");
-        
-        if (!empty($weightDates)) {
-            $this->command->info("   📅 Weight dates range: " . min($weightDates) . " to " . max($weightDates));
-        }
-    }
-    
-    /**
-     * Create waste records for harvests using the exact waste reasons from the frontend
-     */
-    private function createWasteRecords(callable $getRandomDate): void
-    {
-        $this->command->info('');
-        $this->command->info('🗑️  Creating waste records for some harvests...');
-        
-        // Only get harvests that have actual harvest dates
-        $harvests = Harvest::whereNotNull('harvest_at')
-            ->whereNotNull('ripe_quantity')
-            ->where('ripe_quantity', '>', 0)
-            ->get();
-        
-        $wasteCount = 0;
-        $totalWaste = 0;
-        $wasteDates = [];
-        
-        // EXACT waste reasons from your frontend
-        $wasteReasons = [
-            'rotten',
-            'pest_infestation',
-            'disease',
-            'animal_damage',
-            'weather_damage',
-            'overripe',
-            'physical_damage'
-        ];
-        
-        foreach ($harvests as $harvest) {
-            // Only create waste for 30% of harvests
-            if (rand(1, 100) <= 30 && $harvest->ripe_quantity > 0) {
-                $wasteQuantity = rand(1, min(5, $harvest->ripe_quantity));
-                
-                if ($wasteQuantity > 0 && $wasteQuantity <= $harvest->ripe_quantity) {
-                    $wasteId = $this->generateUUID();
-                    $reason = $wasteReasons[array_rand($wasteReasons)];
-                    $wasteDate = $getRandomDate();
-                    
-                    // Ensure waste date is not before harvest date
-                    if ($wasteDate < $harvest->harvest_at) {
-                        $wasteDate = $harvest->harvest_at;
-                    }
-                    
-                    DB::table('wastes')->insert([
-                        'id' => $wasteId,
-                        'harvest_id' => $harvest->id,
-                        'waste_quantity' => $wasteQuantity,
-                        'reason' => $reason,
-                        'reported_at' => $wasteDate,
-                        'created_at' => $wasteDate,
-                        'updated_at' => $wasteDate,
-                    ]);
-                    
-                    $wasteCount++;
-                    $totalWaste += $wasteQuantity;
-                    $wasteDates[] = $wasteDate->format('Y-m-d');
-                    
-                    $this->command->info("   🗑️  Waste record created: {$wasteQuantity} fruits - Reason: {$reason}");
-                }
-            }
-        }
-        
-        $this->command->info("✅ Created {$wasteCount} waste records with total waste: {$totalWaste} fruits");
-        
-        if (!empty($wasteDates)) {
-            $this->command->info("   📅 Waste dates range: " . min($wasteDates) . " to " . max($wasteDates));
-        }
-        
-        $this->displayWasteStatistics();
-    }
-    
-    /**
-     * Display waste reason statistics to verify distribution
-     */
-    private function displayWasteStatistics(): void
-    {
-        $wasteStats = DB::table('wastes')
-            ->select('reason', DB::raw('COUNT(*) as count'), DB::raw('SUM(waste_quantity) as total_waste'))
-            ->groupBy('reason')
-            ->get();
-        
-        if ($wasteStats->isNotEmpty()) {
-            $this->command->info('');
-            $this->command->info('📊 WASTE REASON DISTRIBUTION:');
-            $this->command->info('----------------------------------------');
-            foreach ($wasteStats as $stat) {
-                $this->command->info("   • {$stat->reason}: {$stat->count} records, {$stat->total_waste} fruits wasted");
-            }
-            $this->command->info('----------------------------------------');
-        }
-    }
-    
-    /**
-     * Update harvest statuses based on ripe_quantity, fruit_weights, and wastes
-     */
-    private function updateHarvestStatuses(): void
-    {
-        $harvestStats = [
-            'harvested' => 0,
-            'partial' => 0,
-            'pending' => 0
-        ];
-        
-        $this->command->info('');
-        $this->command->info('📊 Updating harvest statuses based on ripe_quantity and processed fruits...');
         
         $harvests = Harvest::all();
         $updatedCount = 0;
         
         foreach ($harvests as $harvest) {
-            // Skip pending harvests (no harvest date) - they remain pending
-            if ($harvest->harvest_at === null) {
-                $harvestStats['pending']++;
-                continue;
-            }
-            
-            // Get fruit to know total quantity
             $fruit = Fruit::find($harvest->fruit_id);
-            if (!$fruit) {
-                $harvestStats['pending']++;
-                continue;
-            }
+            if (!$fruit) continue;
             
-            // Get total fruit weights count (how many fruits were weighed)
-            $totalWeights = DB::table('fruit_weights')
-                ->where('harvest_id', $harvest->id)
-                ->count();
-            
-            // Get total waste quantity
-            $totalWastes = DB::table('wastes')
-                ->where('harvest_id', $harvest->id)
-                ->sum('waste_quantity');
-            
-            // Total processed fruits = weighed fruits + wasted fruits
-            $totalProcessed = $totalWeights + $totalWastes;
             $fruitQuantity = $fruit->quantity;
             
-            // Determine status based on total processed vs fruit quantity
+            $totalWeights = DB::table('fruit_weights')->where('harvest_id', $harvest->id)->count();
+            $totalWastes = DB::table('wastes')->where('harvest_id', $harvest->id)->sum('waste_quantity');
+            $totalChildRecords = $totalWeights + $totalWastes;
+            
             $newStatus = 'pending';
             
-            if ($totalProcessed >= $fruitQuantity && $fruitQuantity > 0) {
-                // All fruits have been processed (weighed or wasted)
-                $newStatus = 'harvested';
-                $harvestStats['harvested']++;
-            } elseif ($totalProcessed > 0 || ($harvest->ripe_quantity && $harvest->ripe_quantity > 0)) {
-                // Some fruits have been processed OR there is ripe_quantity recorded
-                $newStatus = 'partial';
-                $harvestStats['partial']++;
-            } else {
-                // No processing done yet
+            if ($totalChildRecords == 0 && $harvest->harvest_at === null) {
                 $newStatus = 'pending';
-                $harvestStats['pending']++;
+            } elseif ($totalChildRecords >= $fruitQuantity) {
+                $newStatus = 'harvested';
+            } elseif ($totalChildRecords > 0 && $totalChildRecords < $fruitQuantity) {
+                $newStatus = 'partial';
+            } elseif ($harvest->harvest_at !== null && $totalChildRecords == 0) {
+                $newStatus = 'partial';
+            } else {
+                $newStatus = 'pending';
             }
             
-            // Update harvest status if changed
+            $harvestStats[$newStatus]++;
+            
             if ($harvest->status !== $newStatus) {
                 $harvest->update(['status' => $newStatus]);
                 $updatedCount++;
-                
-                $this->command->info("   📝 Harvest {$harvest->id}: {$harvest->status} → {$newStatus} (Processed: {$totalProcessed}/{$fruitQuantity}, Ripe: {$harvest->ripe_quantity})");
             }
         }
         
-        $this->command->info('====================================');
-        $this->command->info('📊 FINAL HARVEST STATUS SUMMARY');
-        $this->command->info('====================================');
-        $this->command->info('   ✅ Harvested (all fruits processed): ' . ($harvestStats['harvested'] ?? 0));
-        $this->command->info('   📋 Partial (some fruits processed): ' . ($harvestStats['partial'] ?? 0));
-        $this->command->info('   ⏳ Pending (no harvest date or no processing): ' . ($harvestStats['pending'] ?? 0));
-        $this->command->info('====================================');
-        $this->command->info("✅ Updated {$updatedCount} harvest statuses");
-        
-        // Final verification - check for any harvests with ripe_quantity but pending status
-        $incorrectStatuses = Harvest::whereNotNull('ripe_quantity')
-            ->where('ripe_quantity', '>', 0)
-            ->where('status', 'pending')
-            ->count();
-        
-        if ($incorrectStatuses > 0) {
-            $this->command->error("⚠️  WARNING: Found {$incorrectStatuses} harvests with ripe_quantity > 0 but status is 'pending'!");
-            $this->command->error("   These should be fixed manually or by running the seeder again.");
-            
-            // Fix them automatically
-            Harvest::whereNotNull('ripe_quantity')
-                ->where('ripe_quantity', '>', 0)
-                ->where('status', 'pending')
-                ->update(['status' => 'partial']);
-            
-            $this->command->info("✅ Fixed {$incorrectStatuses} harvests by changing status to 'partial'");
-        }
+        $this->command->info('');
+        $this->command->info('📊 FINAL HARVEST STATUS SUMMARY:');
+        $this->command->info("   ⏳ Pending: {$harvestStats['pending']}");
+        $this->command->info("   📋 Partial: {$harvestStats['partial']}");
+        $this->command->info("   ✅ Harvested: {$harvestStats['harvested']}");
+        $this->command->info("   🔄 Statuses updated: {$updatedCount}");
     }
     
-    /**
-     * Generate UUID v4
-     */
+    private function displayFinalSummary(): void
+    {
+        $totalHarvests = Harvest::count();
+        $totalWeights = DB::table('fruit_weights')->count();
+        $totalWastes = DB::table('wastes')->sum('waste_quantity');
+        
+        $this->command->info('');
+        $this->command->info('====================================');
+        $this->command->info('🌾 FINAL SEEDER SUMMARY');
+        $this->command->info('====================================');
+        $this->command->info("📊 Total harvests created: {$totalHarvests}");
+        $this->command->info("⚖️  Total fruit weights: {$totalWeights}");
+        $this->command->info("🗑️  Total waste records: {$totalWastes}");
+        $this->command->info('====================================');
+    }
+    
     private function generateUUID(): string
     {
         return sprintf('%04x%04x-%04x-%04x-%04x-%04x%04x%04x',

@@ -47,19 +47,11 @@ class FruitSeeder extends Seeder
             return $fruitImageUrls[array_rand($fruitImageUrls)];
         };
         
-        // Helper function to get random date from January 2026 to current month
+        // Helper function to get random date between 110-120 days ago
         $getRandomDate = function() {
-            $startDate = Carbon::create(2026, 1, 1); // January 1, 2026
-            $endDate = Carbon::now(); // Current date
-            
-            // If start date is in the future (should not happen), use current date minus 30 days
-            if ($startDate->gt($endDate)) {
-                $startDate = Carbon::now()->subMonths(6);
-            }
-            
-            // Get random timestamp between start and end date
-            $randomTimestamp = rand($startDate->timestamp, $endDate->timestamp);
-            $randomDate = Carbon::createFromTimestamp($randomTimestamp);
+            // Date between 110 and 120 days ago from today
+            $daysAgo = rand(105, 120);
+            $randomDate = Carbon::now()->subDays($daysAgo);
             
             // Set random time within the day
             $randomDate->setTime(rand(0, 23), rand(0, 59), rand(0, 59));

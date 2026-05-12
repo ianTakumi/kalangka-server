@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('id')->primary();
             
             // Foreign key to fruits table
-            $table->string('fruit_id')->nullable();  // Fixed: -> not =>, and no (true)
+            $table->string('fruit_id')->nullable(); 
             $table->foreign('fruit_id')
                   ->references('id')
                   ->on('fruits')

@@ -60,6 +60,15 @@ class UserSeeder extends Seeder
                 'role' => 'user',
                 'password' => 'Password123!',
             ],
+                [
+                'id' => 'ef7beb4f-1377-4171-bcf0-16bbd89e0421',
+                'first_name' => 'Imyv',
+                'last_name' => 'Admin',
+                'gender' => 'male',
+                'email' => 'imyv@gmail.com',
+                'role' => 'admin',
+                'password' => 'Password123!',
+            ],
         ];
 
         foreach ($users as $user) {
@@ -70,7 +79,7 @@ class UserSeeder extends Seeder
 
         // Display created accounts
         $this->command->info('=' . str_repeat('=', 50));
-        $this->command->info('Created 5 user accounts:');
+        $this->command->info('Created 6 user accounts:');
         $this->command->info('=' . str_repeat('=', 50));
         
         foreach ($users as $index => $user) {

@@ -13,6 +13,8 @@ use Database\Seeders\FruitSeeder;
 use Database\Seeders\HarvestSeeder;
 use Database\Seeders\ContactSeeder;
 use Database\Seeders\ArticleSeeder;
+use Database\Seeders\DurianSeeder;
+use Database\Seeders\PapayaSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -39,5 +41,7 @@ class DatabaseSeeder extends Seeder
         $this->call(HarvestSeeder::class);
         $this->call(ContactSeeder::class);
         $this->call(ArticleSeeder::class);
+        $this->call(DurianSeeder::class);
+        $this->call(PapayaSeeder::class);
     }
 }

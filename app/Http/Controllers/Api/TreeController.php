@@ -41,64 +41,74 @@ class TreeController extends Controller
     /**
      * Store a tree with ID from React Native
      */
-   public function store(Request $request)
-{
-    try {
-        $ids = $request->ids; // Array of IDs
-        $type = $request->type; // Same type for all
-        
-        if (!$ids || !is_array($ids)) {
-            // Single tree mode (backward compatible)
-            $ids = [$request->id];
-            $type = $request->type;
-        }
-        
-        $createdTrees = [];
-        
-        // Get the last tree to determine the starting J number
-        $lastTree = Tree::orderBy('created_at', 'desc')->first();
-        
-        if ($lastTree && preg_match('/J(\d+)/', $lastTree->description, $matches)) {
-            $startNumber = (int) $matches[1] + 1;
-        } else {
-            $startNumber = 1;
-        }
-        
-        // Create multiple trees
-        foreach ($ids as $index => $id) {
-            $tree = Tree::create([
-                'id' => $id,
-                'description' => 'J' . ($startNumber + $index),
-                'type' => $type,
-                'status' => 'active',
-                'is_synced' => true,
-            ]);
-            $createdTrees[] = $tree;
-        }
-        
-        // If only 1 tree, return single object for backward compatibility
-        if (count($createdTrees) === 1) {
+    public function store(Request $request)
+    {
+        try {
+            $ids = $request->ids; // Array of IDs
+            $type = $request->type; // Same type for all (Langka, Papaya, Durian)
+            
+            if (!$ids || !is_array($ids)) {
+                // Single tree mode (backward compatible)
+                $ids = [$request->id];
+                $type = $request->type;
+            }
+            
+            $createdTrees = [];
+            
+            // Determine the prefix based on tree type
+            $prefix = match ($type) {
+                'Langka' => 'J',
+                'Papaya' => 'P',
+                'Durian' => 'D',
+                default => 'J'
+            };
+            
+            // Get the last tree of THIS TYPE to determine the starting number
+            $lastTree = Tree::where('type', $type)
+                ->orderBy('created_at', 'desc')
+                ->first();
+            
+            if ($lastTree && preg_match('/' . $prefix . '(\d+)/', $lastTree->description, $matches)) {
+                $startNumber = (int) $matches[1] + 1;
+            } else {
+                $startNumber = 1;
+            }
+            
+            // Create multiple trees
+            foreach ($ids as $index => $id) {
+                $tree = Tree::create([
+                    'id' => $id,
+                    'description' => $prefix . ($startNumber + $index),
+                    'type' => $type,
+                    'status' => 'active',
+                    'is_synced' => true,
+                ]);
+                $createdTrees[] = $tree;
+            }
+            
+            // If only 1 tree, return single object for backward compatibility
+            if (count($createdTrees) === 1) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Tree created successfully',
+                    'data' => $createdTrees[0]
+                ], 201);
+            }
+            
             return response()->json([
                 'success' => true,
-                'message' => 'Tree created successfully',
-                'data' => $createdTrees[0]
+                'message' => count($createdTrees) . ' trees created successfully',
+                'data' => $createdTrees
             ], 201);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create trees',
+                'error' => $e->getMessage()
+            ], 500);
         }
-        
-        return response()->json([
-            'success' => true,
-            'message' => count($createdTrees) . ' trees created successfully',
-            'data' => $createdTrees
-        ], 201);
-        
-    } catch (\Exception $e) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Failed to create trees',
-            'error' => $e->getMessage()
-        ], 500);
     }
-}
 
     /**
      * Display a specific tree

@@ -251,18 +251,11 @@ class FlowerSeeder extends Seeder
             '2b3c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7c',
         ];
 
-        // Helper function to get random date from January to current month
+      
         $getRandomDate = function() {
-            $startDate = Carbon::create(Carbon::now()->year, 1, 1); // January 1 of current year
-            $endDate = Carbon::now(); // Current date
-            
-            if ($startDate->gt($endDate)) {
-                // If we're in January, use last year's January
-                $startDate = Carbon::create(Carbon::now()->subYear()->year, 1, 1);
-            }
-            
-            $randomTimestamp = rand($startDate->timestamp, $endDate->timestamp);
-            $randomDate = Carbon::createFromTimestamp($randomTimestamp);
+            // Date between 110 and 120 days ago from today
+            $daysAgo = rand(110, 120);
+            $randomDate = Carbon::now()->subDays($daysAgo);
             
             // Set random time within the day
             $randomDate->setTime(rand(0, 23), rand(0, 59), rand(0, 59));
