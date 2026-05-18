@@ -16,18 +16,18 @@ class HarvestController extends Controller
     /**
      * Display a listing of harvests.
      */
-   public function index(Request $request)
-{
-    $harvests = Harvest::with(['fruit.tree', 'fruitWeights', 'wastes', 'user'])
-        ->orderBy('harvest_at', 'desc')
-        ->orderBy('created_at', 'desc')
-        ->get();
-    
-    return response()->json([
-        'success' => true,
-        'data' => $harvests
-    ]);
-}
+    public function index(Request $request)
+    {
+        $harvests = Harvest::with(['fruit.tree', 'fruitWeights', 'wastes', 'user'])
+            ->orderBy('harvest_at', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $harvests
+        ]);
+    }
     
     /**
      * Store a newly created harvest with weights and wastes.
@@ -202,117 +202,120 @@ public function assignHarvester(Request $request)
         ]);
     }
     
-/**
- * Update the specified harvest - Updates harvest, REPLACES fruit_weights and wastes if provided
- * 
- * @param Request $request
- * @param string $id
- * @return \Illuminate\Http\JsonResponse
- */
-public function update(Request $request, string $id)
-{
-    $harvest = Harvest::find($id);
-    
-    if (!$harvest) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Harvest record not found'
-        ], 404);
-    }
-    
-    // Validate the request
-    $validator = Validator::make($request->all(), [
-        'id' => 'required|string|uuid',
-        'fruit_id' => 'required|string|exists:fruits,id',
-        'ripe_quantity' => 'required|integer',
-        'harvest_at' => 'required|date|before_or_equal:today',
-        'status' => 'required|string',
-        // Fruit weights validation - HINDI required
-        'fruit_weights' => 'sometimes|array',
-        'fruit_weights.*.id' => 'required_with:fruit_weights|string|uuid',
-        'fruit_weights.*.weight' => 'required_with:fruit_weights|numeric|min:0|max:99.99',
-        'fruit_weights.*.status' => 'sometimes|in:local,national',
+    /**
+     * Update the specified harvest - Updates harvest, REPLACES fruit_weights and wastes if provided
+     * 
+     * @param Request $request
+     * @param string $id
+     * @return \Illuminate\Http\JsonResponse
+    */
+    public function update(Request $request, string $id)
+    {
+        $harvest = Harvest::find($id);
         
-        // Waste validation - HINDI required
-        'wastes' => 'sometimes|array',
-        'wastes.*.id' => 'required_with:wastes|string|uuid',
-        'wastes.*.waste_quantity' => 'required_with:wastes|integer|min:1',
-        'wastes.*.reason' => 'required_with:wastes|string|max:255',
-    ]);
-
-    if ($validator->fails()) {
-        return response()->json([
-            'success' => false,
-            'errors' => $validator->errors()
-        ], 422);
-    }
-
-    DB::beginTransaction();
-
-    try {
-        // 1. UPDATE the existing harvest record
-        $harvest->update([
-            'fruit_id' => $request->fruit_id,
-            'ripe_quantity' => $request->ripe_quantity,
-            'harvest_at' => $request->harvest_at,
-            'status' => $request->status,
+        if (!$harvest) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Harvest record not found'
+            ], 404);
+        }
+        
+        // Validate the request
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|string|uuid',
+            'fruit_id' => 'required|string|exists:fruits,id',
+            'ripe_quantity' => 'required|integer',
+            'harvest_at' => 'required|date|before_or_equal:today',
+            'status' => 'required|string',
+            // Fruit weights validation - HINDI required
+            'fruit_weights' => 'sometimes|array',
+            'fruit_weights.*.id' => 'required_with:fruit_weights|string|uuid',
+            'fruit_weights.*.weight' => 'required_with:fruit_weights|numeric|min:0|max:99.99',
+            'fruit_weights.*.status' => 'sometimes|in:local,national',
+            
+            // Waste validation - HINDI required
+            'wastes' => 'sometimes|array',
+            'wastes.*.id' => 'required_with:wastes|string|uuid',
+            'wastes.*.waste_quantity' => 'required_with:wastes|integer|min:1',
+            'wastes.*.reason' => 'required_with:wastes|string|max:255',
+            'wastes.*.image_uri' => 'nullable|string|max:500', // Supabase URL can be long
         ]);
 
-        // 2. REPLACE fruit_weights ONLY if provided in request
-        if ($request->has('fruit_weights')) {
-            // Delete all existing fruit_weights permanently
-            FruitWeight::where('harvest_id', $harvest->id)->forceDelete();
-            
-            // Create new fruit weights from request (kahit empty array)
-            foreach ($request->fruit_weights as $weightData) {
-                FruitWeight::create([
-                    'id' => $weightData['id'],
-                    'harvest_id' => $harvest->id,
-                    'weight' => $weightData['weight'],
-                    'status' => $weightData['status'] ?? 
-                               ($weightData['weight'] < 8 ? 'local' : 'national'),
-                ]);
-            }
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
         }
 
-        // 3. REPLACE wastes ONLY if provided in request
-        if ($request->has('wastes')) {
-            // Delete all existing wastes permanently
-            Waste::where('harvest_id', $harvest->id)->forceDelete();
-            
-            // Create new wastes from request (kahit empty array)
-            foreach ($request->wastes as $wasteData) {
-                Waste::create([
-                    'id' => $wasteData['id'],
-                    'harvest_id' => $harvest->id,
-                    'waste_quantity' => $wasteData['waste_quantity'],
-                    'reason' => $wasteData['reason'],
-                    'reported_at' => $request->harvest_at,
-                ]);
+        DB::beginTransaction();
+
+        try {
+            // 1. UPDATE the existing harvest record
+            $harvest->update([
+                'fruit_id' => $request->fruit_id,
+                'ripe_quantity' => $request->ripe_quantity,
+                'harvest_at' => $request->harvest_at,
+                'status' => $request->status,
+            ]);
+
+            // 2. REPLACE fruit_weights ONLY if provided in request
+            if ($request->has('fruit_weights')) {
+                // Delete all existing fruit_weights permanently
+                FruitWeight::where('harvest_id', $harvest->id)->forceDelete();
+                
+                // Create new fruit weights from request (kahit empty array)
+                foreach ($request->fruit_weights as $weightData) {
+                    FruitWeight::create([
+                        'id' => $weightData['id'],
+                        'harvest_id' => $harvest->id,
+                        'weight' => $weightData['weight'],
+                        'status' => $weightData['status'] ?? 
+                                ($weightData['weight'] < 8 ? 'local' : 'national'),
+                    ]);
+                }
             }
+
+            // 3. REPLACE wastes ONLY if provided in request
+            if ($request->has('wastes')) {
+                // Delete all existing wastes permanently
+                // No need to delete files from storage since image_uri is a Supabase URL
+                Waste::where('harvest_id', $harvest->id)->forceDelete();
+                
+                // Create new wastes from request (kahit empty array)
+                foreach ($request->wastes as $wasteData) {
+                    Waste::create([
+                        'id' => $wasteData['id'],
+                        'harvest_id' => $harvest->id,
+                        'waste_quantity' => $wasteData['waste_quantity'],
+                        'reason' => $wasteData['reason'],
+                        'image_url' => $wasteData['image_uri'] ?? null, // Direct Supabase URL
+                        'reported_at' => $request->harvest_at,
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            // Load relationships
+            $harvest->load(['fruit.tree', 'fruitWeights', 'wastes']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Harvest updated successfully',
+                'data' => $harvest
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return response()->json([   
+                'success' => false,
+                'message' => 'Failed to update harvest',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        DB::commit();
-
-        // Load relationships
-        $harvest->load(['fruit.tree', 'fruitWeights', 'wastes']);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Harvest updated successfully',
-            'data' => $harvest
-        ], 200);
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        
-        return response()->json([   
-            'success' => false,
-            'message' => 'Failed to update harvest',
-            'error' => $e->getMessage()
-        ], 500);
     }
-}
 
     /**
      * Remove the specified harvest.

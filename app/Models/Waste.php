@@ -47,6 +47,7 @@ class Waste extends Model
         'harvest_id',
         'waste_quantity',
         'reason',
+        'image_url',
         'reported_at',
     ];
 
